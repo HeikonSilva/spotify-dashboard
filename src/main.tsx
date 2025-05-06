@@ -1,16 +1,17 @@
-import { createBrowserRouter,
-  RouterProvider,
- } from "react-router";
+import { BrowserRouter, Route, Routes } from 'react-router'
 import { createRoot } from 'react-dom/client'
-import App from "./App";
-
-const router = createBrowserRouter([
-  {
-    path: "/",
-    Component: App,
-  },
-]);
+import Layout from './components/Layout'
+import './index.css'
+import Musics from './pages/Musics'
+import Home from './pages/Home'
 
 createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router} />
+  <BrowserRouter>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="musics" element={<Musics />} />
+      </Route>
+    </Routes>
+  </BrowserRouter>
 )
