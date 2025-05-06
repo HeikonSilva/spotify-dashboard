@@ -1,7 +1,9 @@
-import { Disc3, House } from 'lucide-react'
+import { Disc3, House, LogIn, Search } from 'lucide-react'
 import { Outlet, NavLink } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
 import { motion } from 'motion/react'
+import { useEffect } from 'react'
+import { fetchAccessToken } from '../utils/spotifyAuth'
 
 export const items = [
   {
@@ -10,13 +12,34 @@ export const items = [
     url: '/',
   },
   {
-    name: 'Musics',
+    name: 'Musicas',
     icon: <Disc3 />,
     url: '/musics',
+  },
+  {
+    name: 'Pesquisar',
+    icon: <Search />,
+    url: '/search',
+  },
+  {
+    name: 'Login',
+    icon: <LogIn />,
+    url: '/login',
   },
 ]
 
 export default function Layout() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get('code')
+    if (code) {
+      fetchAccessToken(code).then((data) => {
+        localStorage.setItem('spotify_access_token', data.access_token)
+        // Remova o code da URL
+        window.history.replaceState({}, document.title, '/')
+      })
+    }
+  }, [])
   return (
     <div className="bg-b2 w-screen h-screen flex gap-2 p-2 flex-row">
       <div className=" w-1/4 p-2 flex flex-col gap-2 bg-b1 rounded-xl">
@@ -28,7 +51,7 @@ export default function Layout() {
           <NavLink to={item.url} key={item.name}>
             <div
               key={item.name}
-              className="flex flex-row gap-5 py-4 px-6 text-b4 items-center hover:text-sprimary hover:bg-b3 transition-colors rounded-2xl cursor-pointer"
+              className="flex flex-row gap-5 py-4 px-6 text-b4 items-center hover:text-white hover:bg-b3 transition-colors rounded-2xl cursor-pointer"
             >
               {item.icon}
               <h1 className="font-bold text-xl">{item.name}</h1>
