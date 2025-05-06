@@ -18,7 +18,7 @@ export const items = [
 export default function Layout() {
   return (
     <div className="bg-b2 w-screen h-screen flex gap-2 p-2 flex-row">
-      <div className=" w-1/4 h-[100vh-1rem] p-2 flex flex-col gap-2 bg-b1 rounded-xl">
+      <div className=" w-1/4 p-2 flex flex-col gap-2 bg-b1 rounded-xl">
         <div className="flex flex-row gap-5 py-4 px-6 text-primary items-center rounded-2xl">
           <img src={SpotifyIcon} alt="Spotify Logo" width={32} height={32} />
           <h1 className="font-bold text-2xl">Spotify</h1>
@@ -35,7 +35,7 @@ export default function Layout() {
           </NavLink>
         ))}
       </div>
-      <div className="w-3/4 h-[100vh-1rem] p-2 flex flex-col gap-2 bg-b1 rounded-xl">
+      <div className="w-3/4 p-2 flex flex-col gap-2 bg-b1 rounded-xl">
         <Outlet />
       </div>
     </div>
