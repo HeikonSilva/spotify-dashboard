@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      // Pegar o código da URL
+      const urlParams = new URLSearchParams(window.location.search)
+      const code = urlParams.get('code')
+
+      // Redirecionar para a rota correta com o código
+      window.location.replace(`/#/callback?code=${code}`)
+    </script>
+  </head>
+  <body>
+    Redirecionando...
+  </body>
+</html>

@@ -6,27 +6,20 @@ export default function Callback() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Em vez de buscar em window.location.search, verificamos a URL completa
-    const url = window.location.href
-    const hasCode = url.includes('?code=')
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
 
-    if (hasCode) {
-      // Extrair o código da URL completa
-      const code = url.split('?code=')[1].split('#')[0]
-
-      if (code) {
-        exchangeToken(code).then((token) => {
-          saveToken(token)
-          window.history.replaceState(
-            {},
-            document.title,
-            window.location.pathname
-          )
-          navigate('/')
-        })
-      }
+    if (code) {
+      exchangeToken(code).then((token) => {
+        saveToken(token)
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        )
+        navigate('/')
+      })
     }
   }, [navigate])
-
-  return <h1>Autenticando...</h1>
+  return <h1>Callback</h1>
 }
