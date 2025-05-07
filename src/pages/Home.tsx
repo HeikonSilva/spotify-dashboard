@@ -12,10 +12,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('spotify_access_token')
+    const token = localStorage.getItem('access_token')
     if (!token) return
 
-    fetch('https://api.spotify.com/v1/me/top/tracks?limit=10', {
+    fetch('https://api.spotify.com/v1/me/tracks?market=BR&limit=10&offset=5', {
       headers: {
         Authorization: `Bearer ${token}`,
       },

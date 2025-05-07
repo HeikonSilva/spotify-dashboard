@@ -3,7 +3,7 @@ const REDIRECT_URI = 'https://192.168.23.157:5173/callback'
 
 const SPOTIFY_AUTHORIZE_URL = new URL('https://accounts.spotify.com/authorize')
 const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token'
-const SCOPES = 'user-read-private user-read-email'
+const SCOPES = 'user-read-private user-read-email user-library-read'
 
 async function generateCodeChallenge(codeVerifier: string): Promise<string> {
   const data = new TextEncoder().encode(codeVerifier)
@@ -99,40 +99,34 @@ export async function fetchAccessToken(code: string) {
   return response.json()*/
 
 export async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem('refresh_token')
-
+  const refreshToken = localStorage.getItem('refresh_token') // Certifique-se de salvar o refresh token
   if (!refreshToken) {
-    throw new Error('Refresh token not found in localStorage')
+    throw new Error('Refresh token não encontrado.')
   }
 
-  const payload = {
+  const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
-      client_id: CLIENT_ID,
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
+      client_id: CLIENT_ID, // Apenas o client_id é necessário no fluxo PKCE
     }),
+  })
+
+  if (!response.ok) {
+    throw new Error('Erro ao atualizar o token.')
   }
 
-  const response = await fetch(SPOTIFY_TOKEN_URL, payload)
   const data = await response.json()
+  const now = new Date()
+  const expiry = new Date(now.getTime() + data.expires_in * 1000)
+  localStorage.setItem('access_token', data.access_token)
+  localStorage.setItem('expires', expiry.toISOString())
 
-  if (response.ok) {
-    // Atualizar tokens no localStorage
-    localStorage.setItem('access_token', data.access_token)
-    localStorage.setItem('expires_in', data.expires_in.toString())
-
-    const now = new Date()
-    const expiry = new Date(now.getTime() + data.expires_in * 1000)
-    localStorage.setItem('expires', expiry.toISOString())
-
-    return data
-  } else {
-    throw new Error(`Failed to refresh access token: ${data.error}`)
-  }
+  return data
 }
 
 export function isAccessTokenExpired(): boolean {
