@@ -1,138 +1,80 @@
-const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID as string
-const REDIRECT_URI = 'https://192.168.23.157:5173/callback'
+const clientId = 'fc709806d94d4dbd95542687040c6987'
+const redirectUri = 'https://192.168.0.13:5173/callback'
 
-const SPOTIFY_AUTHORIZE_URL = new URL('https://accounts.spotify.com/authorize')
-const SPOTIFY_TOKEN_URL = 'https://accounts.spotify.com/api/token'
-const SCOPES = 'user-read-private user-read-email user-library-read'
+const authorizationEndpoint = 'https://accounts.spotify.com/authorize'
+const tokenEndpoint = 'https://accounts.spotify.com/api/token'
+const scope = 'user-read-private user-read-email'
 
-async function generateCodeChallenge(codeVerifier: string): Promise<string> {
+export function generateRandomString(length: number) {
+  const possible =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  const values = window.crypto.getRandomValues(new Uint8Array(length))
+  return Array.from(values)
+    .map((x) => possible[x % possible.length])
+    .join('')
+}
+
+export async function generateCodeChallenge(codeVerifier: string) {
   const data = new TextEncoder().encode(codeVerifier)
-  const hashed = await crypto.subtle.digest('SHA-256', data)
-  return btoa(String.fromCharCode(...new Uint8Array(hashed)))
+  const digest = await window.crypto.subtle.digest('SHA-256', data)
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
     .replace(/=/g, '')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
 }
 
-function generateCodeVerifier(): string {
-  const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  const randomValues = crypto.getRandomValues(new Uint8Array(128))
-  return Array.from(randomValues)
-    .map((x) => possible[x % possible.length])
-    .join('')
-}
-
-export async function redirectToSpotifyAuth() {
-  const codeVerifier = generateCodeVerifier()
+export async function redirectToSpotifyAuthorize() {
+  const codeVerifier = generateRandomString(64)
   const codeChallenge = await generateCodeChallenge(codeVerifier)
 
-  // Salvar o code_verifier no localStorage para uso posterior
-  localStorage.setItem('spotify_code_verifier', codeVerifier)
+  localStorage.setItem('code_verifier', codeVerifier)
 
   const params = new URLSearchParams({
     response_type: 'code',
-    client_id: CLIENT_ID,
-    scope: SCOPES, // Exemplo: 'user-read-private user-read-email'
-    redirect_uri: REDIRECT_URI,
+    client_id: clientId,
+    scope,
     code_challenge_method: 'S256',
     code_challenge: codeChallenge,
+    redirect_uri: redirectUri,
   })
 
-  // Redirecionar o usuário para a URL de autorização
-  window.location.href = `${SPOTIFY_AUTHORIZE_URL}?${params.toString()}`
+  window.location.href = `${authorizationEndpoint}?${params.toString()}`
 }
 
-export async function fetchAccessToken(code: string) {
-  const codeVerifier = localStorage.getItem('spotify_code_verifier')
+export async function exchangeToken(code: string) {
+  const codeVerifier = localStorage.getItem('code_verifier')
+  if (!codeVerifier) throw new Error('No code_verifier found in localStorage')
 
-  if (!codeVerifier) {
-    throw new Error('Code verifier not found in localStorage')
-  }
-
-  const payload = {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      client_id: CLIENT_ID,
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: REDIRECT_URI,
-      code_verifier: codeVerifier,
-    }),
-  }
-
-  const response = await fetch(SPOTIFY_TOKEN_URL, payload)
-  const data = await response.json()
-
-  if (response.ok) {
-    // Armazenar tokens no localStorage
-    localStorage.setItem('spotify_access_token', data.access_token) // Padronizado
-    localStorage.setItem('refresh_token', data.refresh_token)
-    localStorage.setItem('expires_in', data.expires_in.toString())
-
-    const now = new Date()
-    const expiry = new Date(now.getTime() + data.expires_in * 1000)
-    localStorage.setItem('expires', expiry.toISOString())
-
-    return data
-  } else {
-    throw new Error(`Failed to fetch access token: ${data.error}`)
-  }
-}
-
-/*  const body = new URLSearchParams({
+  const params = new URLSearchParams({
+    client_id: clientId,
     grant_type: 'authorization_code',
     code,
-    redirect_uri: REDIRECT_URI,
-    client_id: CLIENT_ID,
-    code_verifier: codeVerifier || '',
+    redirect_uri: redirectUri,
+    code_verifier: codeVerifier,
   })
 
-  const response = await fetch(SPOTIFY_TOKEN_URL, {
-    method: 'POST',
+  // Use Axios for the request
+  const axios = (await import('axios')).default
+  const response = await axios.post(tokenEndpoint, params, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
   })
-  return response.json()*/
-
-export async function refreshAccessToken() {
-  const refreshToken = localStorage.getItem('refresh_token') // Certifique-se de salvar o refresh token
-  if (!refreshToken) {
-    throw new Error('Refresh token não encontrado.')
-  }
-
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: new URLSearchParams({
-      grant_type: 'refresh_token',
-      refresh_token: refreshToken,
-      client_id: CLIENT_ID, // Apenas o client_id é necessário no fluxo PKCE
-    }),
-  })
-
-  if (!response.ok) {
-    throw new Error('Erro ao atualizar o token.')
-  }
-
-  const data = await response.json()
-  const now = new Date()
-  const expiry = new Date(now.getTime() + data.expires_in * 1000)
-  localStorage.setItem('access_token', data.access_token)
-  localStorage.setItem('expires', expiry.toISOString())
-
-  return data
+  return response.data
 }
 
-export function isAccessTokenExpired(): boolean {
-  const expiry = localStorage.getItem('expires')
-  if (!expiry) return true
+interface SpotifyToken {
+  access_token: string
+  refresh_token?: string
+  expires_in: string
+}
 
-  const now = new Date()
-  return now >= new Date(expiry)
+export function saveToken(token: SpotifyToken) {
+  localStorage.setItem('access_token', token.access_token)
+  localStorage.setItem('refresh_token', token.refresh_token || '')
+  localStorage.setItem('expires_in', token.expires_in)
+  const expiry = Date.now() + parseInt(token.expires_in) * 1000
+  localStorage.setItem('expires', expiry.toString())
+}
+
+export function getAccessToken() {
+  return localStorage.getItem('access_token')
 }

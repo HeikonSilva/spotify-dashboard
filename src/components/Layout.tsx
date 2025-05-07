@@ -1,5 +1,5 @@
 import { Disc3, House, LogIn, Search } from 'lucide-react'
-import { Outlet, NavLink } from 'react-router'
+import { Outlet, NavLink, useLocation } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
 import { motion } from 'motion/react'
 
@@ -27,9 +27,13 @@ export const items = [
 ]
 
 export default function Layout() {
-  const token = localStorage.getItem('access_token')
+  const location = useLocation()
+  const currentItem = items.find((item) =>
+    item.url === '/'
+      ? location.pathname === '/'
+      : location.pathname.startsWith(item.url)
+  )
 
-  console.log(token)
   return (
     <div className="bg-b2 w-screen h-screen flex gap-2 p-2 flex-row">
       <div className=" w-1/4 p-2 flex flex-col gap-2 bg-b1 rounded-xl">
@@ -50,6 +54,16 @@ export default function Layout() {
         ))}
       </div>
       <div className="text-white w-3/4 p-2 flex flex-col gap-2 bg-b1 rounded-xl">
+        <motion.div
+          initial={{ opacity: 0, transition: { duration: 0.1 } }}
+          animate={{ opacity: 1, transition: { duration: 0.1 } }}
+          exit={{ opacity: 0, transition: { duration: 0.1 } }}
+          className="border-b-2 border-b-b4 w-full items-center flex"
+        >
+          <h1 className="font-bold text-2xl">
+            {currentItem ? currentItem.name : 'Spotify'}
+          </h1>
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, transition: { duration: 0.1 } }}
           animate={{ opacity: 1, transition: { duration: 0.1 } }}
