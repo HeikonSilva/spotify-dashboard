@@ -4,7 +4,7 @@ import './index.css'
 import AnimatedRoutes from './routes'
 
 createRoot(document.getElementById('root')!).render(
-  <HashRouter basename="/spotify-dashboard/">
+  <HashRouter>
     <AnimatedRoutes />
   </HashRouter>
 )

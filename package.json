@@ -2,7 +2,7 @@
   "name": "spotify-dashboard",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://heikonsilva.github.io/spotify-dashboard/",
+  "homepage": "https://heikonsilva.github.io/spotify-dashboard",
   "type": "module",
   "scripts": {
     "dev": "vite",
