@@ -10,7 +10,6 @@ export default function Callback() {
     const code = params.get('code')
     if (code) {
       fetchAccessToken(code).then((data) => {
-        localStorage.setItem('spotify_access_token', data.access_token)
         navigate('/', { replace: true })
       })
     }
