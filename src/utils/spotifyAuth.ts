@@ -1,5 +1,5 @@
 const clientId = 'fc709806d94d4dbd95542687040c6987'
-const redirectUri = 'https://heikonsilva.github.io/spotify-dashboard/#/callback'
+const redirectUri = 'https://192.168.21.148:5173/callback'
 
 const authorizationEndpoint = 'https://accounts.spotify.com/authorize'
 const tokenEndpoint = 'https://accounts.spotify.com/api/token'
