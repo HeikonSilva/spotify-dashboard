@@ -9,9 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "shadcn": "pnpm dlx shadcn@latest",
-    "predeploy": "pnpm build",
-    "deploy": "gh-pages -d dist"
+    "shadcn": "pnpm dlx shadcn@latest"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.2",

@@ -1,6 +1,9 @@
-import { redirectToSpotifyAuthorize } from '@/utils/spotifyAuth.js'
+import { redirectToSpotifyAuthorize, getAccessToken } from '@/utils/spotifyAuth'
 
 export default function Login() {
+  const accessToken = getAccessToken()
+
+  console.log('Access Token:', accessToken)
   return (
     <div>
       <button

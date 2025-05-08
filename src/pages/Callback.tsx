@@ -21,5 +21,4 @@ export default function Callback() {
       })
     }
   }, [navigate])
-  return <h1>Callback</h1>
 }
