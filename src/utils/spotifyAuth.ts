@@ -1,9 +1,9 @@
 const clientId = 'fc709806d94d4dbd95542687040c6987'
-const redirectUri = 'https://192.168.21.148:5173/callback'
+const redirectUri = 'https://192.168.0.13:5173/callback'
 
 const authorizationEndpoint = 'https://accounts.spotify.com/authorize'
 const tokenEndpoint = 'https://accounts.spotify.com/api/token'
-const scope = 'user-read-private user-read-email'
+const scope = 'user-read-private user-read-email user-read-recently-played'
 
 export function generateRandomString(length: number) {
   const possible =
