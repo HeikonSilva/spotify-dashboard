@@ -3,7 +3,13 @@ const redirectUri = 'https://192.168.0.13:5173/callback'
 
 const authorizationEndpoint = 'https://accounts.spotify.com/authorize'
 const tokenEndpoint = 'https://accounts.spotify.com/api/token'
-const scope = 'user-read-private user-read-email user-read-recently-played'
+const scope =
+  'user-read-private user-read-email user-top-read user-read-recently-played'
+
+// Cache para o status de autenticação
+let _isAuthenticated: boolean | null = null
+let _lastAuthCheck: number = 0
+const AUTH_CACHE_DURATION = 5000 // 5 segundos de cache para o status de auth
 
 export function generateRandomString(length: number) {
   const possible =
@@ -58,6 +64,10 @@ export async function exchangeToken(code: string) {
   const response = await axios.post(tokenEndpoint, params, {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   })
+
+  // Reset authentication status cache when getting a new token
+  _isAuthenticated = null
+
   return response.data
 }
 
@@ -73,8 +83,62 @@ export function saveToken(token: SpotifyToken) {
   localStorage.setItem('expires_in', token.expires_in)
   const expiry = Date.now() + parseInt(token.expires_in) * 1000
   localStorage.setItem('expires', expiry.toString())
+
+  // Update authentication status cache
+  _isAuthenticated = true
+  _lastAuthCheck = Date.now()
 }
 
 export function getAccessToken() {
   return localStorage.getItem('access_token')
+}
+
+export function clearAuth() {
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('refresh_token')
+  localStorage.removeItem('expires_in')
+  localStorage.removeItem('expires')
+  localStorage.removeItem('code_verifier')
+
+  // Update authentication status cache
+  _isAuthenticated = false
+  _lastAuthCheck = Date.now()
+}
+
+/**
+ * Verifica de forma eficiente se o usuário está autenticado
+ * @returns {boolean} true se o usuário está autenticado, false caso contrário
+ */
+export function isAuthenticated(): boolean {
+  // Usa o cache se for recente
+  const now = Date.now()
+  if (_isAuthenticated !== null && now - _lastAuthCheck < AUTH_CACHE_DURATION) {
+    return _isAuthenticated
+  }
+
+  // Verifica se há um token e se ele não está expirado
+  const token = localStorage.getItem('access_token')
+  const expires = localStorage.getItem('expires')
+
+  if (!token || !expires) {
+    _isAuthenticated = false
+    _lastAuthCheck = now
+    return false
+  }
+
+  const isValid = now < parseInt(expires)
+
+  // Atualiza o cache
+  _isAuthenticated = isValid
+  _lastAuthCheck = now
+
+  return isValid
+}
+
+/**
+ * Atualiza o logout com o novo mecanismo de cache e usa a função clearAuth
+ */
+export const logout = () => {
+  clearAuth()
+  window.location.href = '/'
 }
