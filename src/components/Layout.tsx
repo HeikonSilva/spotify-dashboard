@@ -1,8 +1,8 @@
 import { Disc3, Home, LogIn, LogOut, Search, User } from 'lucide-react'
 import { Outlet, NavLink, useLocation } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
-import { motion } from 'motion/react'
-import { useSpotifyMe } from '../hooks/useSpotifyMe'
+import { motion } from 'motion/react' // Fixed import from 'motion/react'
+import { useSpotifyMe } from '@/hooks/useSpotifyMe'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/contexts/AuthContext'
+import { useEffect } from 'react'
 
 export const primaryItems = [
   {
@@ -54,11 +55,21 @@ export default function Layout() {
       : location.pathname.startsWith(item.url)
   )
 
-  const { data } = useSpotifyMe()
   const { isAuthenticated, userProfile, logout } = useAuth()
+  const { data, loading, error } = useSpotifyMe()
 
-  // Utilizando userProfile do contexto com fallback para dados do hook
   const profileData = userProfile || data
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }, [error])
+
+  const profileImageUrl =
+    profileData?.images && profileData.images.length > 0
+      ? profileData.images[0]?.url
+      : undefined
 
   return (
     <div className="bg-b2 w-screen h-screen flex gap-3 p-3 flex-row overflow-hidden">
@@ -105,67 +116,59 @@ export default function Layout() {
         <div className="mt-auto px-2 pb-4">
           <Separator className="bg-b3/30 mb-3" />
 
+          {/* Only show user profile and logout when authenticated */}
           {isAuthenticated && profileData ? (
             <>
               <div className="flex items-center gap-3 px-4 py-3 text-white rounded-lg mb-2">
                 <Avatar className="h-8 w-8 border border-b3/30">
-                  {profileData.images && profileData.images[0]?.url ? (
-                    <AvatarImage
-                      src={profileData.images[0].url}
-                      alt="Profile"
-                    />
+                  {profileImageUrl ? (
+                    <AvatarImage src={profileImageUrl} alt="Profile" />
                   ) : null}
                   <AvatarFallback className="bg-b3/50">
                     <User className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
                 <span className="font-medium truncate">
-                  {profileData.display_name}
+                  {profileData.display_name || 'User'}
                 </span>
               </div>
 
+              {/* Only render logout button when authenticated */}
               <TooltipProvider>
-                {secondaryItems
-                  .filter((item) => item.requiresAuth)
-                  .map((item) => (
-                    <Tooltip key={item.name}>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={logout}
-                          className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-b4 hover:text-white hover:bg-b3/50 transition-colors rounded-lg"
-                        >
-                          {item.icon}
-                          <span className="font-medium">{item.name}</span>
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Sair da sua conta</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={logout}
+                      className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 text-b4 hover:text-white hover:bg-b3/50 transition-colors rounded-lg"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Sair da sua conta</p>
+                  </TooltipContent>
+                </Tooltip>
               </TooltipProvider>
             </>
           ) : (
+            /* Only show login when not authenticated */
             <ul className="space-y-1">
-              {secondaryItems
-                .filter((item) => !isAuthenticated || item.requiresNoAuth)
-                .map((item) => (
-                  <li key={item.name}>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        cn(
-                          'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
-                          'font-medium hover:bg-b3/50 hover:text-white',
-                          isActive ? 'bg-b3/70 text-white' : 'text-b4'
-                        )
-                      }
-                    >
-                      {item.icon}
-                      <span>{item.name}</span>
-                    </NavLink>
-                  </li>
-                ))}
+              <li>
+                <NavLink
+                  to="/login"
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
+                      'font-medium hover:bg-b3/50 hover:text-white',
+                      isActive ? 'bg-b3/70 text-white' : 'text-b4'
+                    )
+                  }
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>Login</span>
+                </NavLink>
+              </li>
             </ul>
           )}
         </div>

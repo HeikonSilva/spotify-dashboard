@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { motion } from 'motion/react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Clock, Music, Users, AlertCircle, InfoIcon } from 'lucide-react'
+import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 import { useListeningActivity } from '@/hooks/useListeningActivity'
 import { useSpotifyTopArtists } from '@/hooks/useSpotifyTopArtists'
@@ -25,19 +27,25 @@ export default function Home() {
     error: activityError,
   } = useListeningActivity()
 
-  // Get top artists data
+  // Get top artists data - using correct timeRange values
   const {
     data: topArtistsData,
     loading: topArtistsLoading,
     error: topArtistsError,
-  } = useSpotifyTopArtists({ limit: 5, timeRange: '5' })
+  } = useSpotifyTopArtists({
+    limit: 5,
+    timeRange: 'short_term',
+  })
 
-  // Get top tracks data
+  // Get top tracks data - using correct timeRange values
   const {
     data: topTracksData,
     loading: topTracksLoading,
     error: topTracksError,
-  } = useSpotifyTopTracks({ limit: 5, timeRange: '5' })
+  } = useSpotifyTopTracks({
+    limit: 5,
+    timeRange: 'short_term',
+  })
 
   // Get recently played tracks
   const oneMonthAgoTimestamp = useMemo(() => {
@@ -52,7 +60,7 @@ export default function Home() {
     error: recentError,
   } = useSpotifyRecentlyPlayed({
     limit: 10,
-    after: oneMonthAgoTimestamp,
+    //    after: oneMonthAgoTimestamp,
   })
 
   // Process recent tracks data
@@ -139,12 +147,9 @@ export default function Home() {
 
   if (activityError) {
     return (
-      <Alert variant="destructive" className="bg-red-900/20 border-red-800">
-        <AlertTitle className="text-red-400">Erro</AlertTitle>
-        <AlertDescription>
-          Não foi possível carregar os dados: {activityError}
-        </AlertDescription>
-      </Alert>
+      <ErrorDisplay
+        message={`Não foi possível carregar os dados: ${activityError}`}
+      />
     )
   }
 
@@ -259,13 +264,11 @@ export default function Home() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <AlertCircle className="h-8 w-8 text-b4 mb-2" />
-                <p className="text-b4">Dados não disponíveis.</p>
-                <p className="text-sm text-b4/70 mt-1">
-                  Spotify não retornou dados de artistas mais ouvidos.
-                </p>
-              </div>
+              <EmptyState
+                icon={<AlertCircle className="h-8 w-8 text-b4 mb-2" />}
+                title="Dados não disponíveis."
+                description="Spotify não retornou dados de artistas mais ouvidos."
+              />
             </CardContent>
           </Card>
         ) : (
@@ -295,13 +298,11 @@ export default function Home() {
               <CardTitle className="text-white">Músicas Mais Ouvidas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <AlertCircle className="h-8 w-8 text-b4 mb-2" />
-                <p className="text-b4">Dados não disponíveis.</p>
-                <p className="text-sm text-b4/70 mt-1">
-                  Spotify não retornou dados de músicas mais ouvidas.
-                </p>
-              </div>
+              <EmptyState
+                icon={<AlertCircle className="h-8 w-8 text-b4 mb-2" />}
+                title="Dados não disponíveis."
+                description="Spotify não retornou dados de músicas mais ouvidas."
+              />
             </CardContent>
           </Card>
         ) : (

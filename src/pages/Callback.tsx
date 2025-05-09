@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { exchangeToken, saveToken } from '../utils/spotifyAuth'
+import { exchangeToken, saveToken } from '@/utils/spotifyAuth'
 import { Loader2, Check, X, Home, LogIn } from 'lucide-react'
 import { motion } from 'motion/react'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
@@ -41,44 +41,77 @@ export default function Callback() {
 
         console.log('Authentication code received, exchanging for token...')
 
-        // Troca o código por um token
-        const token = await exchangeToken(code)
+        try {
+          // Troca o código por um token
+          const token = await exchangeToken(code)
 
-        // Log do resultado da troca
-        console.log(
-          'Token exchange successful:',
-          token ? 'Token received' : 'No token received'
-        )
+          // Log do resultado da troca
+          console.log(
+            'Token exchange successful:',
+            token ? 'Token received' : 'No token received'
+          )
 
-        // Salva o token e atualiza o estado de autenticação
-        saveToken(token)
-        updateAuth(true)
+          // Salva o token e atualiza o estado de autenticação
+          saveToken(token)
+          updateAuth(true)
 
-        // Limpa a URL por questões de segurança
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        )
+          // Limpa a URL por questões de segurança
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          )
 
-        // Atualiza o status para sucesso
-        setStatus('success')
+          // Atualiza o status para sucesso
+          setStatus('success')
+        } catch (tokenError) {
+          console.error('Token exchange error:', tokenError)
+          setStatus('error')
+          setErrorMessage(
+            tokenError instanceof Error
+              ? tokenError.message
+              : 'Falha ao trocar o código por token'
+          )
+
+          // Important: Make sure we're not updating auth state on error
+          updateAuth(false)
+        }
       } catch (err) {
-        console.error('Error during token exchange:', err)
+        console.error('Error during authentication process:', err)
         setStatus('error')
         setErrorMessage(
           err instanceof Error ? err.message : 'Falha na autenticação'
         )
+
+        // Important: Make sure we're not updating auth state on error
+        updateAuth(false)
       }
     }
 
     handleAuthentication()
-  }, [updateAuth]) // Removemos navigate das dependências pois não usamos dentro do effect
+  }, [updateAuth]) // Dependency array is correct
+
+  // If status is error but we have an active token, it means we're displaying the wrong state
+  useEffect(() => {
+    if (status === 'error') {
+      // Check localStorage for access token
+      const token = localStorage.getItem('access_token')
+      const expires = localStorage.getItem('expires')
+
+      if (token && expires && Date.now() < parseInt(expires)) {
+        console.log('Valid token found despite error status, correcting state')
+        setStatus('success')
+        setErrorMessage(null)
+        updateAuth(true)
+      }
+    }
+  }, [status, updateAuth])
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center h-full"
     >
       <div className="bg-b1 border border-b3/30 rounded-xl p-8 max-w-md w-full shadow-xl">

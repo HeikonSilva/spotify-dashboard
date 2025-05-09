@@ -89,8 +89,81 @@ export function saveToken(token: SpotifyToken) {
   _lastAuthCheck = Date.now()
 }
 
-export function getAccessToken() {
-  return localStorage.getItem('access_token')
+// Add this function to refresh an expired token
+export async function refreshAuthToken(): Promise<boolean> {
+  try {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) {
+      console.error('No refresh token available')
+      return false
+    }
+
+    const params = new URLSearchParams({
+      client_id: clientId,
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+    })
+
+    const axios = (await import('axios')).default
+    const response = await axios.post(tokenEndpoint, params, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    })
+
+    // Save the new token data
+    saveToken(response.data)
+    return true
+  } catch (error) {
+    console.error('Error refreshing token:', error)
+    // If refresh fails, clear auth state
+    clearAuth()
+    return false
+  }
+}
+
+/**
+ * Gets an active access token, refreshing if necessary
+ * @returns Promise with the access token or null if unavailable
+ */
+export async function getActiveAccessToken(): Promise<string | null> {
+  // Check if token exists and is valid
+  const token = localStorage.getItem('access_token')
+  const expires = localStorage.getItem('expires')
+  const now = Date.now()
+
+  if (token && expires) {
+    // If token exists but is expired, try to refresh
+    if (now >= parseInt(expires)) {
+      console.log('Token expired, attempting to refresh...')
+      const refreshed = await refreshAuthToken()
+      if (refreshed) {
+        return localStorage.getItem('access_token')
+      }
+      return null
+    }
+    // If token is valid, return it
+    return token
+  }
+
+  return null
+}
+
+// Modify the existing getAccessToken to be synchronous (for backward compatibility)
+export function getAccessToken(): string | null {
+  const token = localStorage.getItem('access_token')
+  const expires = localStorage.getItem('expires')
+  const now = Date.now()
+
+  if (token && expires) {
+    // If token is expired, return null
+    // This maintains backward compatibility but doesn't try to refresh
+    if (now >= parseInt(expires)) {
+      console.warn('Token expired. Use getActiveAccessToken() for auto-refresh')
+      return null
+    }
+    return token
+  }
+
+  return null
 }
 
 export function clearAuth() {
@@ -106,17 +179,16 @@ export function clearAuth() {
 }
 
 /**
- * Verifica de forma eficiente se o usuário está autenticado
- * @returns {boolean} true se o usuário está autenticado, false caso contrário
+ * Improved isAuthenticated that checks token expiration
  */
 export function isAuthenticated(): boolean {
-  // Usa o cache se for recente
+  // Use cache if recent
   const now = Date.now()
   if (_isAuthenticated !== null && now - _lastAuthCheck < AUTH_CACHE_DURATION) {
     return _isAuthenticated
   }
 
-  // Verifica se há um token e se ele não está expirado
+  // Check if there's a token and if it's not expired
   const token = localStorage.getItem('access_token')
   const expires = localStorage.getItem('expires')
 
@@ -128,7 +200,7 @@ export function isAuthenticated(): boolean {
 
   const isValid = now < parseInt(expires)
 
-  // Atualiza o cache
+  // Update cache
   _isAuthenticated = isValid
   _lastAuthCheck = now
 
