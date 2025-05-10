@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Clock, Music, Users, AlertCircle, InfoIcon } from 'lucide-react'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PageLoader } from '@/components/ui/PageLoader'
 
 import { useListeningActivity } from '@/hooks/useListeningActivity'
 import { useSpotifyTopArtists } from '@/hooks/useSpotifyTopArtists'
@@ -12,6 +11,7 @@ import { useSpotifyTopTracks } from '@/hooks/useSpotifyTopTracks'
 import { ActivityBarChart } from '@/components/charts/ActivityBarChart'
 import { TopItemsList } from '@/components/charts/TopItemsList'
 import { useSpotifyRecentlyPlayed } from '@/hooks/useSpotifyRecentlyPlayed'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function Home() {
   const {
@@ -97,7 +97,30 @@ export default function Home() {
   }
 
   if (activityLoading && topArtistsLoading && topTracksLoading) {
-    return <PageLoader />
+    return (
+      <div className="w-full space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <Card key={i} className="bg-b1 border-b3/30">
+              <CardHeader className="pb-2">
+                <Skeleton className="h-5 w-3/4 bg-b3/30" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-12 w-1/2 bg-b3/30" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card className="bg-b1 border-b3/30">
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4 bg-b3/30" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[250px] w-full bg-b3/30" />
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (activityError) {

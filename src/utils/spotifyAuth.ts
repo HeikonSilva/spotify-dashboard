@@ -4,7 +4,7 @@ const redirectUri = 'https://192.168.0.13:5173/callback'
 const authorizationEndpoint = 'https://accounts.spotify.com/authorize'
 const tokenEndpoint = 'https://accounts.spotify.com/api/token'
 const scope =
-  'user-read-private user-read-email user-top-read user-read-recently-played'
+  'user-read-private user-read-email user-read-currently-playing user-read-playback-state user-modify-playback-state user-top-read user-read-recently-played'
 
 // Cache para o status de autenticação
 let _isAuthenticated: boolean | null = null

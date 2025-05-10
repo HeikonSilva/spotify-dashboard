@@ -2,12 +2,74 @@ import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { InfoIcon, ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { motion } from 'motion/react'
-import { PageLoader } from '@/components/ui/PageLoader'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useSpotifyRecentlyPlayed } from '@/hooks/useSpotifyRecentlyPlayed'
+
+const HistorySkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+    className="max-w-full mx-auto w-full"
+  >
+    <Card className="bg-b1 text-white border-b3/30">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-40 rounded" />
+          <Skeleton className="h-7 w-24 rounded" />
+        </div>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="border-b border-b3/20">
+                <th className="px-4 py-2 text-left text-b4 font-normal">#</th>
+                <th className="px-4 py-2 text-left text-b4 font-normal">
+                  Capa
+                </th>
+                <th className="px-4 py-2 text-left text-b4 font-normal">
+                  Música
+                </th>
+                <th className="px-4 py-2 text-left text-b4 font-normal">
+                  Artista(s)
+                </th>
+                <th className="px-4 py-2 text-left text-b4 font-normal">
+                  Data/Hora
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 10 }).map((_, idx) => (
+                <tr key={idx} className="hover:bg-b3/10 transition-colors">
+                  <td className="px-4 py-2 text-b4">
+                    <Skeleton className="h-4 w-6 rounded" />
+                  </td>
+                  <td className="px-4 py-2">
+                    <Skeleton className="min-w-[48px] h-12 rounded" />
+                  </td>
+                  <td className="px-4 py-2">
+                    <Skeleton className="h-4 w-32 rounded mb-1" />
+                  </td>
+                  <td className="px-4 py-2">
+                    <Skeleton className="h-4 w-28 rounded" />
+                  </td>
+                  <td className="px-4 py-2">
+                    <Skeleton className="h-4 w-20 rounded" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  </motion.div>
+)
 
 export default function History() {
   const [loading, setLoading] = useState(true)
-  const [sortAsc, setSortAsc] = useState(false) // novo estado para ordenação
+  const [sortAsc, setSortAsc] = useState(false)
   const {
     data: recentData,
     loading: recentLoading,
@@ -56,7 +118,7 @@ export default function History() {
   }
 
   if (loading || recentLoading) {
-    return <PageLoader />
+    return <HistorySkeleton />
   }
 
   if (recentError) {
@@ -73,7 +135,7 @@ export default function History() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="max-w-2xl mx-auto w-full"
+      className="max-w-full mx-auto w-full"
     >
       <Card className="bg-b1 text-white border-b3/30">
         <CardHeader>

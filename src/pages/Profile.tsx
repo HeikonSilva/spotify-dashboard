@@ -1,14 +1,93 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageLoader } from '@/components/ui/PageLoader'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { Music, InfoIcon, User, Crown } from 'lucide-react'
 import { motion } from 'motion/react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { useSpotifyPlaylists } from '@/hooks/useSpotifyPlaylists'
 import { useSpotifyMe } from '@/hooks/useSpotifyMe'
 import { useSpotifyTopTracks } from '@/hooks/useSpotifyTopTracks'
 import { useSpotifyTopArtists } from '@/hooks/useSpotifyTopArtists'
 import { useListeningActivity } from '@/hooks/useListeningActivity'
+
+const ProfileSkeleton = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="flex flex-col gap-6"
+  >
+    {/* Profile header skeleton */}
+    <div className="bg-gradient-to-br from-b1 to-b2 border border-b3/30 rounded-xl p-6 mb-6 shadow-md">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+        <Skeleton className="w-28 h-28 rounded-full" />
+        <div className="flex flex-col gap-2 w-full max-w-xs">
+          <Skeleton className="h-8 w-3/4 rounded" />
+          <Skeleton className="h-4 w-1/2 rounded" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-6 w-12 rounded-full" />
+          </div>
+          <Skeleton className="h-4 w-32 mt-2 rounded" />
+        </div>
+      </div>
+    </div>
+    {/* Destaques skeleton */}
+    <div>
+      <Skeleton className="h-7 w-32 mb-4 rounded" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <Card className="min-h-[160px] bg-gradient-to-br from-b1 to-b2 border-b3/30 shadow-md">
+          <CardHeader className="pb-2">
+            <Skeleton className="h-6 w-32 rounded" />
+          </CardHeader>
+          <CardContent className="flex items-center gap-4">
+            <Skeleton className="w-16 h-16 rounded" />
+            <div>
+              <Skeleton className="h-5 w-24 mb-2 rounded" />
+              <Skeleton className="h-4 w-16 rounded" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="min-h-[160px] bg-gradient-to-br from-b1 to-b2 border-b3/30 shadow-md">
+          <CardHeader className="pb-2">
+            <Skeleton className="h-6 w-32 rounded" />
+          </CardHeader>
+          <CardContent className="flex items-center gap-4">
+            <Skeleton className="w-16 h-16 rounded" />
+            <div>
+              <Skeleton className="h-5 w-24 mb-2 rounded" />
+              <Skeleton className="h-4 w-16 rounded" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+    {/* Listas skeleton */}
+    <Skeleton className="h-7 w-24 mb-4 rounded" />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {[1, 2, 3].map((i) => (
+        <Card key={i} className="bg-b1 border-b3/30">
+          <CardHeader>
+            <Skeleton className="h-6 w-32 rounded" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              {[1, 2, 3].map((j) => (
+                <div key={j} className="flex items-center gap-4">
+                  <Skeleton className="w-12 h-12 rounded" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-24 mb-2 rounded" />
+                    <Skeleton className="h-3 w-16 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </motion.div>
+)
 
 const Profile = () => {
   const {
@@ -36,7 +115,7 @@ const Profile = () => {
   } = useSpotifyPlaylists()
 
   if (profileLoading || tracksLoading || artistsLoading || activityLoading) {
-    return <PageLoader />
+    return <ProfileSkeleton />
   }
 
   if (profileError) {
