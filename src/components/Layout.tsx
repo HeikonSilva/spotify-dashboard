@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DiscAlbum,
+  Search,
 } from 'lucide-react'
 import { Outlet, NavLink, useLocation } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
@@ -53,6 +54,11 @@ export const primaryItems = [
     name: 'Player',
     icon: <DiscAlbum className="h-5 w-5" />,
     url: '/player',
+  },
+  {
+    name: 'Pesquisar',
+    icon: <Search className="h-5 w-5" />,
+    url: '/search',
   },
 ]
 
