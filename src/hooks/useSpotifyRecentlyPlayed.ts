@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import { getActiveAccessToken } from '@/utils/spotifyAuth'
+import { useSpotifyToken } from './useSpotifyToken'
 
 interface ExternalUrls {
   spotify: string
@@ -127,26 +127,30 @@ export function useSpotifyRecentlyPlayed(
   const [data, setData] = useState<RecentlyPlayedResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { token, loading: tokenLoading, error: tokenError } = useSpotifyToken()
 
   useEffect(() => {
     let isMounted = true
 
+    if (tokenLoading) return
+    if (tokenError) {
+      setError(tokenError)
+      setLoading(false)
+      return
+    }
+    if (!token) {
+      setError('No access token available')
+      setLoading(false)
+      return
+    }
+
     const fetchData = async () => {
       try {
-        // Use await to get the token
-        const token = await getActiveAccessToken()
-
-        if (!token) {
-          throw new Error('No access token available')
-        }
-
-        // Build query parameters
         const params = new URLSearchParams()
         if (options.limit) params.append('limit', options.limit.toString())
         if (options.after) params.append('after', options.after.toString())
         if (options.before) params.append('before', options.before.toString())
 
-        // Construct the URL with query parameters
         const url = `https://api.spotify.com/v1/me/player/recently-played${
           params.toString() ? '?' + params.toString() : ''
         }`
@@ -166,7 +170,6 @@ export function useSpotifyRecentlyPlayed(
         console.error('Error fetching recently played tracks:', err)
         if (isMounted) {
           if (axios.isAxiosError(err) && err.response) {
-            // Extract the specific error message from Spotify API
             const spotifyError =
               err.response.data?.error?.message || err.message
             setError(`${err.response.status}: ${spotifyError}`)
@@ -186,7 +189,14 @@ export function useSpotifyRecentlyPlayed(
     return () => {
       isMounted = false
     }
-  }, [options.limit, options.after, options.before])
+  }, [
+    token,
+    tokenLoading,
+    tokenError,
+    options.limit,
+    options.after,
+    options.before,
+  ])
 
   return { data, loading, error }
 }

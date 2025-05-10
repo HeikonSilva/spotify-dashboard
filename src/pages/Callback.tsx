@@ -18,12 +18,10 @@ export default function Callback() {
   useEffect(() => {
     const handleAuthentication = async () => {
       try {
-        // Obter código de autorização da URL
         const urlParams = new URLSearchParams(window.location.search)
         const code = urlParams.get('code')
         const error = urlParams.get('error')
 
-        // Se houver erro explícito na URL, tratamos aqui
         if (error) {
           console.error('Error from Spotify auth:', error)
           setStatus('error')
@@ -31,7 +29,6 @@ export default function Callback() {
           return
         }
 
-        // Verificamos se o código está presente
         if (!code) {
           console.error('No authorization code found in URL')
           setStatus('error')
@@ -42,27 +39,22 @@ export default function Callback() {
         console.log('Authentication code received, exchanging for token...')
 
         try {
-          // Troca o código por um token
           const token = await exchangeToken(code)
 
-          // Log do resultado da troca
           console.log(
             'Token exchange successful:',
             token ? 'Token received' : 'No token received'
           )
 
-          // Salva o token e atualiza o estado de autenticação
           saveToken(token)
           updateAuth(true)
 
-          // Limpa a URL por questões de segurança
           window.history.replaceState(
             {},
             document.title,
             window.location.pathname
           )
 
-          // Atualiza o status para sucesso
           setStatus('success')
         } catch (tokenError) {
           console.error('Token exchange error:', tokenError)
@@ -73,7 +65,6 @@ export default function Callback() {
               : 'Falha ao trocar o código por token'
           )
 
-          // Important: Make sure we're not updating auth state on error
           updateAuth(false)
         }
       } catch (err) {
@@ -83,18 +74,15 @@ export default function Callback() {
           err instanceof Error ? err.message : 'Falha na autenticação'
         )
 
-        // Important: Make sure we're not updating auth state on error
         updateAuth(false)
       }
     }
 
     handleAuthentication()
-  }, [updateAuth]) // Dependency array is correct
+  }, [updateAuth])
 
-  // If status is error but we have an active token, it means we're displaying the wrong state
   useEffect(() => {
     if (status === 'error') {
-      // Check localStorage for access token
       const token = localStorage.getItem('access_token')
       const expires = localStorage.getItem('expires')
 

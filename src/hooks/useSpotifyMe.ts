@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getActiveAccessToken } from '@/utils/spotifyAuth'
+import { useSpotifyToken } from './useSpotifyToken'
 import { useAuth } from '@/contexts/AuthContext'
 
 // Interface for the Spotify User Profile
@@ -51,53 +51,55 @@ export function useSpotifyMe() {
   // Ref para evitar múltiplas requisições durante montagens rápidas
   const isFetchingRef = useRef(false)
 
+  const { token, loading: tokenLoading, error: tokenError } = useSpotifyToken()
+
   useEffect(() => {
     let isMounted = true
     const fetchUserProfile = async () => {
-      // Se o usuário não estiver autenticado, não precisamos fazer a requisição
       if (!isAuthenticated) {
         setLoading(false)
         return
       }
 
-      // Não fazer requisição se já estiver buscando
+      if (tokenLoading) return
+      if (tokenError) {
+        setError(tokenError)
+        setLoading(false)
+        return
+      }
+      if (!token) {
+        setError('No access token found')
+        setLoading(false)
+        return
+      }
+
       if (isFetchingRef.current) return
 
       try {
-        // Use await to get the token since this is an async function
-        const currentToken = await getActiveAccessToken()
-
         // Verificar o cache - usar dados em cache se disponíveis e ainda válidos
         const now = Date.now()
         if (
           profileCache &&
           profileCache.profileData &&
-          profileCache.token === currentToken &&
+          profileCache.token === token &&
           now - profileCache.timestamp < CACHE_DURATION
         ) {
           if (isMounted) {
             setData(profileCache.profileData)
             setLoading(false)
-            // Ainda atualiza o contexto com os dados em cache
             updateProfile(profileCache.profileData)
           }
           return
         }
 
-        // Marcar como estando buscando para evitar solicitações duplicadas
         isFetchingRef.current = true
 
-        // Se não temos cache válido, prosseguir com a requisição
         setLoading(true)
         setError(null)
 
-        if (!currentToken) {
-          throw new Error('No access token found')
-        }
-
         const response = await fetch('https://api.spotify.com/v1/me', {
           headers: {
-            Authorization: `Bearer ${currentToken}`,
+            Authorization: `Bearer ${token}`,
           },
         })
 
@@ -111,7 +113,7 @@ export function useSpotifyMe() {
         profileCache = {
           profileData,
           timestamp: now,
-          token: currentToken,
+          token,
         }
 
         if (isMounted) {
@@ -136,7 +138,7 @@ export function useSpotifyMe() {
     return () => {
       isMounted = false
     }
-  }, [isAuthenticated, updateProfile])
+  }, [isAuthenticated, updateProfile, token, tokenLoading, tokenError])
 
   return { data, loading, error }
 }

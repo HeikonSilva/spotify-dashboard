@@ -1,51 +1,31 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import {
   redirectToSpotifyAuthorize,
   getActiveAccessToken,
-  isAuthenticated,
 } from '@/utils/spotifyAuth'
 import { Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 export default function Login() {
-  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
     let isMounted = true
 
     const checkAuth = async () => {
-      try {
-        // If user already has a valid token, redirect to home page
-        const accessToken = await getActiveAccessToken()
+      const accessToken = await getActiveAccessToken()
 
-        if (accessToken && isMounted) {
-          navigate('/')
-          return
-        }
+      if (accessToken && isMounted) {
+        navigate('/')
+        return
+      }
 
-        // Otherwise, redirect to Spotify auth page after a brief delay
-        if (isMounted) {
-          const timer = setTimeout(() => {
-            redirectToSpotifyAuthorize()
-          }, 500) // Small delay for better UX
-
-          return () => clearTimeout(timer)
-        }
-      } catch (err) {
-        console.error('Error checking authentication:', err)
-
-        // Still redirect to authorize if there's an error
-        if (isMounted) {
-          setTimeout(() => {
-            redirectToSpotifyAuthorize()
-          }, 500)
-        }
+      if (isMounted) {
+        redirectToSpotifyAuthorize()
       }
     }
 
     checkAuth()
-
     return () => {
       isMounted = false
     }

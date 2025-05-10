@@ -1,12 +1,10 @@
 import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { motion } from 'motion/react'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Clock, Music, Users, AlertCircle, InfoIcon } from 'lucide-react'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PageLoader } from '@/components/ui/PageLoader'
 
 import { useListeningActivity } from '@/hooks/useListeningActivity'
 import { useSpotifyTopArtists } from '@/hooks/useSpotifyTopArtists'
@@ -16,7 +14,6 @@ import { TopItemsList } from '@/components/charts/TopItemsList'
 import { useSpotifyRecentlyPlayed } from '@/hooks/useSpotifyRecentlyPlayed'
 
 export default function Home() {
-  // Get listening activity data (hourly, weekday)
   const {
     hourlyActivity,
     weekdayActivity,
@@ -27,32 +24,23 @@ export default function Home() {
     error: activityError,
   } = useListeningActivity()
 
-  // Get top artists data - using correct timeRange values
   const {
     data: topArtistsData,
     loading: topArtistsLoading,
     error: topArtistsError,
   } = useSpotifyTopArtists({
     limit: 5,
-    timeRange: 'short_term',
+    timeRange: 'medium_term',
   })
 
-  // Get top tracks data - using correct timeRange values
   const {
     data: topTracksData,
     loading: topTracksLoading,
     error: topTracksError,
   } = useSpotifyTopTracks({
     limit: 5,
-    timeRange: 'short_term',
+    timeRange: 'medium_term',
   })
-
-  // Get recently played tracks
-  const oneMonthAgoTimestamp = useMemo(() => {
-    const date = new Date()
-    date.setMonth(date.getMonth() - 1)
-    return date.getTime()
-  }, [])
 
   const {
     data: recentData,
@@ -60,10 +48,8 @@ export default function Home() {
     error: recentError,
   } = useSpotifyRecentlyPlayed({
     limit: 10,
-    //    after: oneMonthAgoTimestamp,
   })
 
-  // Process recent tracks data
   const sortedItems = useMemo(() => {
     if (!recentData?.items?.length) return []
 
@@ -73,41 +59,33 @@ export default function Home() {
     )
   }, [recentData])
 
-  // Format milliseconds to hours and minutes
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60))
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
     return `${hours}h ${minutes}m`
   }
 
-  // Format hour for X axis
   const formatHour = (hour: number) => {
     return `${hour}:00`
   }
 
-  // Format date for display
   const formatPlayedDate = (dateString: string) => {
     const date = new Date(dateString)
     const today = new Date()
     const yesterday = new Date()
     yesterday.setDate(today.getDate() - 1)
 
-    // Check if it's today
     if (date.toDateString() === today.toDateString()) {
       return `Hoje, ${date.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       })}`
-    }
-    // Check if it's yesterday
-    else if (date.toDateString() === yesterday.toDateString()) {
+    } else if (date.toDateString() === yesterday.toDateString()) {
       return `Ontem, ${date.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
       })}`
-    }
-    // Other dates
-    else {
+    } else {
       return `${date.toLocaleDateString([], {
         day: '2-digit',
         month: '2-digit',
@@ -119,30 +97,7 @@ export default function Home() {
   }
 
   if (activityLoading && topArtistsLoading && topTracksLoading) {
-    return (
-      <div className="w-full space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="bg-b1 border-b3/30">
-              <CardHeader className="pb-2">
-                <Skeleton className="h-5 w-3/4 bg-b3/30" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-12 w-1/2 bg-b3/30" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Card className="bg-b1 border-b3/30">
-          <CardHeader>
-            <Skeleton className="h-6 w-1/4 bg-b3/30" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[250px] w-full bg-b3/30" />
-          </CardContent>
-        </Card>
-      </div>
-    )
+    return <PageLoader />
   }
 
   if (activityError) {
@@ -154,13 +109,7 @@ export default function Home() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
-      {/* Stats cards */}
+    <div className="gap-4 flex flex-col">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-b1 to-b2 border-b3/30 shadow-md hover:shadow-lg transition-all">
           <CardHeader className="pb-2">
@@ -204,7 +153,6 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Activity charts */}
       <Card className="bg-b1 text-white border-b3/30">
         <CardHeader>
           <CardTitle>Padrões de Escuta</CardTitle>
@@ -249,9 +197,7 @@ export default function Home() {
         </CardContent>
       </Card>
 
-      {/* Top Items */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Top Artists */}
         {!topArtistsLoading &&
         !topArtistsError &&
         (!topArtistsData ||
@@ -287,7 +233,6 @@ export default function Home() {
           />
         )}
 
-        {/* Top Tracks */}
         {!topTracksLoading &&
         !topTracksError &&
         (!topTracksData ||
@@ -323,7 +268,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* Recent Tracks */}
       {!recentLoading &&
       !recentError &&
       (!sortedItems || sortedItems.length === 0) ? (
@@ -386,6 +330,6 @@ export default function Home() {
           </Card>
         )
       )}
-    </motion.div>
+    </div>
   )
 }

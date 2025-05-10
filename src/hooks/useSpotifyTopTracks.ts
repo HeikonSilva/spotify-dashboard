@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getActiveAccessToken } from '@/utils/spotifyAuth'
+import { useSpotifyToken } from './useSpotifyToken'
 
 interface ExternalUrls {
   spotify: string
@@ -99,21 +99,28 @@ export function useSpotifyTopTracks(options: UseSpotifyTopTracksOptions = {}) {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  const { token, loading: tokenLoading, error: tokenError } = useSpotifyToken()
   const { limit = 10, timeRange = 'short_term', offset = 0 } = options
 
   useEffect(() => {
     let isMounted = true
 
+    if (tokenLoading) return
+    if (tokenError) {
+      setError(tokenError)
+      setLoading(false)
+      return
+    }
+    if (!token) {
+      setError('No access token available')
+      setLoading(false)
+      return
+    }
+
     const fetchTopTracks = async () => {
       setLoading(true)
       setError(null)
-
       try {
-        const token = await getActiveAccessToken()
-        if (!token) {
-          throw new Error('No access token available')
-        }
-
         const params = new URLSearchParams({
           limit: limit.toString(),
           time_range: timeRange,
@@ -155,7 +162,7 @@ export function useSpotifyTopTracks(options: UseSpotifyTopTracksOptions = {}) {
     return () => {
       isMounted = false
     }
-  }, [limit, timeRange, offset])
+  }, [token, tokenLoading, tokenError, limit, timeRange, offset])
 
   return { data, loading, error }
 }
