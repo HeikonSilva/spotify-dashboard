@@ -77,6 +77,7 @@ const routeTitles: Record<string, string> = {
   '/track': 'Música',
   '/login': 'Entrar',
   '/callback': 'Autenticando',
+  '/playlist': 'Playlist',
   '*': 'Página não encontrada',
 }
 

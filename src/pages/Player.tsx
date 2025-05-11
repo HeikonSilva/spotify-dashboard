@@ -21,6 +21,8 @@ import {
 import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer'
 import { useSpotifyMe } from '@/hooks/useSpotifyMe'
 import { motion, AnimatePresence } from 'motion/react'
+import { usePremium } from '@/contexts/PremiumContext'
+import { Link } from 'react-router'
 
 export default function Player() {
   const {
@@ -51,10 +53,10 @@ export default function Player() {
   const [queueUri, setQueueUri] = useState('')
   const [showModal, setShowModal] = useState(false)
 
-  // Determina o modo de operação
-  const isViewMode = profile && profile.product === 'free'
-  // Agora, controles de player são desabilitados, mas refresh é sempre permitido
-  const controlsDisabled = isViewMode
+  const { isPremium } = usePremium()
+
+  // Agora, controles de player são desabilitados se não for premium
+  const controlsDisabled = !isPremium
 
   // Volume slider handler
   const handleVolumeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,22 +170,22 @@ export default function Player() {
             <div className="flex items-center gap-2">
               <span
                 className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
-                  isViewMode
+                  !isPremium
                     ? 'bg-yellow-400 text-black'
                     : 'bg-sprimary text-black'
                 }`}
                 title={
-                  isViewMode
+                  !isPremium
                     ? 'Modo Visualização: Apenas leitura'
                     : 'Modo Operação: Controle total'
                 }
               >
-                {isViewMode ? (
+                {!isPremium ? (
                   <Eye className="w-4 h-4" />
                 ) : (
                   <MousePointerClick className="w-4 h-4" />
                 )}
-                {isViewMode ? 'Visualização' : 'Operação'}
+                {!isPremium ? 'Visualização' : 'Operação'}
               </span>
               <Button
                 size="icon"
@@ -238,14 +240,45 @@ export default function Player() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-bold truncate">
-                    {player.item?.name || 'Desconhecido'}
+                    {player.item?.id ? (
+                      <Link
+                        to={`/track/${player.item.id}`}
+                        className="hover:underline"
+                      >
+                        {player.item.name || 'Desconhecido'}
+                      </Link>
+                    ) : (
+                      player.item?.name || 'Desconhecido'
+                    )}
                   </h2>
                   <p className="text-b4 truncate">
-                    {player.item?.artists?.map((a: any) => a.name).join(', ') ||
-                      'Artista desconhecido'}
+                    {player.item?.artists?.map((artist: any, index: number) => (
+                      <span key={artist.id}>
+                        {index > 0 && ', '}
+                        {artist.id ? (
+                          <Link
+                            to={`/artist/${artist.id}`}
+                            className="hover:underline"
+                          >
+                            {artist.name}
+                          </Link>
+                        ) : (
+                          artist.name
+                        )}
+                      </span>
+                    )) || 'Artista desconhecido'}
                   </p>
                   <p className="text-b4 text-sm truncate">
-                    {player.item?.album?.name}
+                    {player.item?.album?.id ? (
+                      <Link
+                        to={`/album/${player.item.album.id}`}
+                        className="hover:underline"
+                      >
+                        {player.item.album.name}
+                      </Link>
+                    ) : (
+                      player.item?.album?.name
+                    )}
                   </p>
                 </div>
               </div>

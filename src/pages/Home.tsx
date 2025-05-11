@@ -12,6 +12,7 @@ import { ActivityBarChart } from '@/components/charts/ActivityBarChart'
 import { TopItemsList } from '@/components/charts/TopItemsList'
 import { useSpotifyRecentlyPlayed } from '@/hooks/useSpotifyRecentlyPlayed'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Link } from 'react-router'
 
 export default function Home() {
   const {
@@ -249,9 +250,9 @@ export default function Home() {
               topArtistsData?.items.map((artist, idx) => ({
                 id: artist.id,
                 name: (
-                  <a href={`/artist/${artist.id}`} className="hover:underline">
+                  <Link to={`/artist/${artist.id}`} className="hover:underline">
                     {artist.name}
-                  </a>
+                  </Link>
                 ),
                 imageUrl: artist.images[0]?.url,
                 index: idx + 1,
@@ -286,15 +287,15 @@ export default function Home() {
               topTracksData?.items.map((track, idx) => ({
                 id: track.id,
                 name: (
-                  <a href={`/track/${track.id}`} className="hover:underline">
+                  <Link to={`/track/${track.id}`} className="hover:underline">
                     {track.name}
-                  </a>
+                  </Link>
                 ),
                 subtitle: track.artists.map((a, i) => (
                   <span key={a.id}>
-                    <a href={`/artist/${a.id}`} className="hover:underline">
+                    <Link to={`/artist/${a.id}`} className="hover:underline">
                       {a.name}
-                    </a>
+                    </Link>
                     {i < track.artists.length - 1 && <span>, </span>}
                   </span>
                 )),
@@ -349,18 +350,18 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate text-white">
-                          <a
-                            href={`/track/${item.track.id}`}
+                          <Link
+                            to={`/track/${item.track.id}`}
                             className="hover:underline"
                           >
                             {item.track.name}
-                          </a>
+                          </Link>
                         </p>
                         <p className="text-sm text-b4 truncate">
                           {item.track.artists.map((artist, idx) => (
-                            <a
+                            <Link
                               key={artist.id}
-                              href={`/artist/${artist.id}`}
+                              to={`/artist/${artist.id}`}
                               className="hover:underline"
                               style={{
                                 marginRight:
@@ -371,7 +372,7 @@ export default function Home() {
                               {idx < item.track.artists.length - 1 && (
                                 <span>, </span>
                               )}
-                            </a>
+                            </Link>
                           ))}
                         </p>
                       </div>

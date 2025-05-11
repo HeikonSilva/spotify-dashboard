@@ -1,7 +1,7 @@
 import { useParams } from 'react-router'
 import { useSpotifyAlbum } from '@/hooks/useSpotifyAlbum'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Music } from 'lucide-react'
+import { Link } from 'react-router'
 import { motion } from 'motion/react'
 
 export default function AlbumPage() {
@@ -42,15 +42,15 @@ export default function AlbumPage() {
             </CardTitle>
             <div className="text-b4 mt-1">
               {data.artists.map((artist: any, idx: number) => (
-                <a
+                <Link
                   key={artist.id}
-                  href={`/artist/${artist.id}`}
+                  to={`/artist/${artist.id}`}
                   className="hover:underline"
                   style={{ marginRight: idx < data.artists.length - 1 ? 4 : 0 }}
                 >
                   {artist.name}
                   {idx < data.artists.length - 1 && <span>, </span>}
-                </a>
+                </Link>
               ))}
             </div>
             <div className="text-xs text-b4/70 mt-1">
@@ -77,12 +77,12 @@ export default function AlbumPage() {
                       className="w-10 h-10 rounded object-cover shadow"
                     />
                   )}
-                  <a
-                    href={`/track/${track.id}`}
+                  <Link
+                    to={`/track/${track.id}`}
                     className="flex-1 truncate text-white hover:underline"
                   >
                     {track.name}
-                  </a>
+                  </Link>
                   <span className="text-xs text-b4/70">
                     {(track.duration_ms / 1000 / 60).toFixed(2)} min
                   </span>

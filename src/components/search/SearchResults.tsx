@@ -4,6 +4,7 @@ import { InfoIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
+import { Link } from 'react-router'
 
 interface SearchResultsProps {
   title: string
@@ -96,38 +97,41 @@ export function SearchResults({
               <div key={track.id} className="flex items-center py-2">
                 {/* Foto do álbum da track */}
                 {track.album?.images?.[0]?.url && (
-                  <a href={`/album/${track.album.id}`}>
+                  <Link to={`/album/${track.album.id}`}>
                     <img
                       src={track.album.images[0].url}
                       alt={track.album.name}
                       className="w-10 h-10 rounded object-cover mr-3"
                     />
-                  </a>
+                  </Link>
                 )}
                 <div className="flex flex-col">
-                  <a
-                    href={`/track/${track.id}`}
+                  <Link
+                    to={`/track/${track.id}`}
                     className="font-medium text-white hover:underline"
                   >
                     {track.name}
-                  </a>
+                  </Link>
                   <span className="text-b4 text-sm">
                     {track.artists.map((a: any, idx: number) => (
                       <span key={a.id}>
-                        <a href={`/artist/${a.id}`} className="hover:underline">
+                        <Link
+                          to={`/artist/${a.id}`}
+                          className="hover:underline"
+                        >
                           {a.name}
-                        </a>
+                        </Link>
                         {idx < track.artists.length - 1 && <span>, </span>}
                       </span>
                     ))}
                   </span>
                   <span className="text-b4 text-xs">
-                    <a
-                      href={`/album/${track.album.id}`}
+                    <Link
+                      to={`/album/${track.album.id}`}
                       className="hover:underline"
                     >
                       {track.album.name}
-                    </a>
+                    </Link>
                   </span>
                 </div>
               </div>
@@ -137,9 +141,9 @@ export function SearchResults({
         {type === 'artists' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.artists.items.map((artist: any, index: number) => (
-              <a
+              <Link
                 key={artist.id}
-                href={`/artist/${artist.id}`}
+                to={`/artist/${artist.id}`}
                 className="block hover:underline"
               >
                 <SearchResultCard
@@ -152,16 +156,16 @@ export function SearchResults({
                   } seguidores`}
                   index={index}
                 />
-              </a>
+              </Link>
             ))}
           </div>
         )}
         {type === 'albums' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.albums.items.map((album: any, index: number) => (
-              <a
+              <Link
                 key={album.id}
-                href={`/album/${album.id}`}
+                to={`/album/${album.id}`}
                 className="block hover:underline"
               >
                 <SearchResultCard
@@ -177,7 +181,7 @@ export function SearchResults({
                     .join('')}
                   index={index}
                 />
-              </a>
+              </Link>
             ))}
           </div>
         )}

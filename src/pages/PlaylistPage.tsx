@@ -1,4 +1,4 @@
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { useSpotifyPlaylist } from '@/hooks/useSpotifyPlaylist'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { motion } from 'motion/react'
@@ -65,21 +65,21 @@ export default function PlaylistPage() {
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <a
-                      href={`/track/${item.track.id}`}
+                    <Link
+                      to={`/track/${item.track.id}`}
                       className="truncate text-white hover:underline block"
                     >
                       {item.track.name}
-                    </a>
+                    </Link>
                     <div className="text-xs text-b4/70 truncate">
                       {item.track.artists.map((artist: any, i: number) => (
                         <span key={artist.id}>
-                          <a
-                            href={`/artist/${artist.id}`}
+                          <Link
+                            to={`/artist/${artist.id}`}
                             className="hover:underline"
                           >
                             {artist.name}
-                          </a>
+                          </Link>
                           {i < item.track.artists.length - 1 && ', '}
                         </span>
                       ))}

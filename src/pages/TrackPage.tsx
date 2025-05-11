@@ -1,8 +1,12 @@
 import { useParams } from 'react-router'
 import { useSpotifyTrack } from '@/hooks/useSpotifyTrack'
+import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Music } from 'lucide-react'
+import { Music, Play } from 'lucide-react'
 import { motion } from 'motion/react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { usePremium } from '@/contexts/PremiumContext'
 
 export default function TrackPage() {
   const { id } = useParams()
@@ -11,6 +15,9 @@ export default function TrackPage() {
     loading: trackLoading,
     error: trackError,
   } = useSpotifyTrack(id!)
+  const { play, loading: playerLoading } = useSpotifyPlayer()
+  const { isPremium } = usePremium()
+  const [showModal, setShowModal] = useState(false)
 
   if (trackLoading)
     return (
@@ -24,6 +31,14 @@ export default function TrackPage() {
         Erro ao carregar música: {trackError || 'Não encontrada'}
       </div>
     )
+
+  const handlePlay = () => {
+    if (isPremium) {
+      play({ uris: [track.uri] })
+    } else {
+      setShowModal(true)
+    }
+  }
 
   return (
     <motion.div
@@ -40,32 +55,73 @@ export default function TrackPage() {
               className="w-20 h-20 rounded object-cover shadow"
             />
           )}
-          <div>
+          <div className="flex items-center gap-2">
             <CardTitle className="flex items-center gap-2 text-2xl font-bold text-white">
               <Music className="w-5 h-5 text-sprimary" />
               {track.name}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.1 }}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-sprimary text-white shadow hover:bg-sprimary/80 transition disabled:opacity-60 focus:outline-none ml-2"
+                disabled={playerLoading}
+                onClick={handlePlay}
+                aria-label="Tocar música"
+              >
+                <Play className="w-5 h-5" />
+              </motion.button>
             </CardTitle>
-            <div className="text-b4 mt-1">
-              {track.artists.map((artist: any, idx: number) => (
-                <a
-                  key={artist.id}
-                  href={`/artist/${artist.id}`}
-                  className="hover:underline"
-                  style={{
-                    marginRight: idx < track.artists.length - 1 ? 4 : 0,
-                  }}
-                >
-                  {artist.name}
-                  {idx < track.artists.length - 1 && <span>, </span>}
-                </a>
-              ))}
-            </div>
-            <div className="text-xs text-b4/70 mt-1">
-              <a href={`/album/${track.album.id}`} className="hover:underline">
-                {track.album.name}
-              </a>
-            </div>
           </div>
+          {/* Custom Modal */}
+          {showModal && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+            >
+              <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+                className="bg-b1 border border-b3/30 rounded-xl p-8 max-w-md w-full shadow-xl flex flex-col items-center gap-6"
+              >
+                <div className="bg-b2 p-4 rounded-full">
+                  <Music className="h-8 w-8 text-sprimary" />
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold">
+                    Spotify Premium necessário
+                  </h2>
+                  <p className="text-b4">
+                    Para tocar músicas diretamente pelo player, é necessário ter
+                    uma conta Spotify Premium.
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-wrap w-full">
+                  <Button
+                    onClick={() => setShowModal(false)}
+                    className="w-full bg-b2 hover:bg-b3 text-white"
+                  >
+                    Fechar
+                  </Button>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="w-full bg-sprimary hover:bg-sprimary/90 text-black font-medium"
+                  >
+                    <a
+                      href="https://www.spotify.com/premium/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Saiba mais
+                    </a>
+                  </Button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-6 mt-2">

@@ -3,6 +3,7 @@ import { useSpotifyArtist } from '@/hooks/useSpotifyArtist'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Users, Music, ExternalLink } from 'lucide-react'
 import { motion } from 'motion/react'
+import { Link } from 'react-router'
 
 export default function ArtistPage() {
   const { id } = useParams()
@@ -52,14 +53,14 @@ export default function ArtistPage() {
                   {artist.genres.slice(0, 2).join(', ')}
                 </span>
               )}
-              <a
-                href={artist.external_urls.spotify}
+              <Link
+                to={artist.external_urls.spotify}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-2 text-sprimary flex items-center gap-1 hover:underline text-xs"
               >
                 <ExternalLink className="w-4 h-4" /> Spotify
-              </a>
+              </Link>
             </div>
           </div>
         </CardHeader>
@@ -74,7 +75,7 @@ export default function ArtistPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-b3/20">
+            <ul className="divide-y divide-b3/20 max-h-72 overflow-y-auto pr-2">
               {topTracks?.map((track: any, idx: number) => (
                 <li
                   key={track.id}
@@ -90,12 +91,12 @@ export default function ArtistPage() {
                       className="w-10 h-10 rounded object-cover shadow"
                     />
                   )}
-                  <a
-                    href={`/track/${track.id}`}
+                  <Link
+                    to={`/track/${track.id}`}
                     className="flex-1 truncate text-white hover:underline"
                   >
                     {track.name}
-                  </a>
+                  </Link>
                   <span className="text-xs text-b4/70">
                     {(track.duration_ms / 1000 / 60).toFixed(2)} min
                   </span>
@@ -110,11 +111,11 @@ export default function ArtistPage() {
             <CardTitle>Álbuns</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 max-h-72 overflow-y-auto pr-2">
               {albums?.map((album: any) => (
-                <a
+                <Link
                   key={album.id}
-                  href={`/album/${album.id}`}
+                  to={`/album/${album.id}`}
                   className="flex flex-col items-center bg-b3/10 rounded-lg p-2 hover:bg-b3/20 transition-colors group"
                   style={{ textDecoration: 'none' }}
                 >
@@ -131,7 +132,7 @@ export default function ArtistPage() {
                   <span className="text-xs text-b4/70 mt-1">
                     {album.release_date}
                   </span>
-                </a>
+                </Link>
               ))}
             </div>
           </CardContent>

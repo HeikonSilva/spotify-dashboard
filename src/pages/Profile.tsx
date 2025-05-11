@@ -9,6 +9,8 @@ import { useSpotifyMe } from '@/hooks/useSpotifyMe'
 import { useSpotifyTopTracks } from '@/hooks/useSpotifyTopTracks'
 import { useSpotifyTopArtists } from '@/hooks/useSpotifyTopArtists'
 import { useListeningActivity } from '@/hooks/useListeningActivity'
+import { usePremium } from '@/contexts/PremiumContext'
+import { Link } from 'react-router'
 
 const ProfileSkeleton = () => (
   <motion.div
@@ -114,6 +116,8 @@ const Profile = () => {
     error: playlistsError,
   } = useSpotifyPlaylists()
 
+  const { isPremium } = usePremium()
+
   if (profileLoading || tracksLoading || artistsLoading || activityLoading) {
     return <ProfileSkeleton />
   }
@@ -147,7 +151,7 @@ const Profile = () => {
             </h1>
             <p className="text-b4 mb-3">{profile?.email}</p>
             <div className="flex flex-wrap gap-2">
-              {profile?.product === 'premium' ? (
+              {isPremium ? (
                 <motion.span
                   initial={{ scale: 0.9, opacity: 0.7 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -170,14 +174,14 @@ const Profile = () => {
               </span>
             </div>
 
-            <a
-              href={profile?.external_urls?.spotify}
+            <Link
+              to={profile?.external_urls?.spotify}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-block text-sm text-sprimary hover:underline"
             >
               Open profile in Spotify →
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -222,12 +226,12 @@ const Profile = () => {
               )}
               <div>
                 <h3 className="text-xl font-bold text-white">
-                  <a
-                    href={`/artist/${topArtists.items[0].id}`}
+                  <Link
+                    to={`/artist/${topArtists.items[0].id}`}
                     className="hover:underline"
                   >
                     {topArtists.items[0].name}
-                  </a>
+                  </Link>
                 </h3>
                 <p className="text-sm text-b4">
                   {topArtists.items[0].genres?.slice(0, 2).join(', ') ||
@@ -276,12 +280,12 @@ const Profile = () => {
               )}
               <div>
                 <h3 className="text-xl font-bold text-white">
-                  <a
-                    href={`/track/${topTracks.items[0].id}`}
+                  <Link
+                    to={`/track/${topTracks.items[0].id}`}
                     className="hover:underline"
                   >
                     {topTracks.items[0].name}
-                  </a>
+                  </Link>
                 </h3>
                 <p className="text-sm text-b4">
                   {topTracks.items[0].artists.map((a, i) => (
@@ -344,12 +348,12 @@ const Profile = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white truncate">
-                          <a
-                            href={`/artist/${artist.id}`}
+                          <Link
+                            to={`/artist/${artist.id}`}
                             className="hover:underline"
                           >
                             {artist.name}
-                          </a>
+                          </Link>
                         </h3>
                         <p className="text-sm text-b4 truncate">
                           {artist.genres?.slice(0, 2).join(', ') ||
@@ -403,22 +407,22 @@ const Profile = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white truncate">
-                          <a
-                            href={`/track/${track.id}`}
+                          <Link
+                            to={`/track/${track.id}`}
                             className="hover:underline"
                           >
                             {track.name}
-                          </a>
+                          </Link>
                         </h3>
                         <p className="text-sm text-b4 truncate">
                           {track.artists.map((a, i) => (
                             <span key={a.id}>
-                              <a
-                                href={`/artist/${a.id}`}
+                              <Link
+                                to={`/artist/${a.id}`}
                                 className="hover:underline"
                               >
                                 {a.name}
-                              </a>
+                              </Link>
                               {i < track.artists.length - 1 && <span>, </span>}
                             </span>
                           ))}
@@ -475,12 +479,12 @@ const Profile = () => {
                         </div>
                       )}
                       <div className="flex-1 font-medium text-white truncate min-w-0">
-                        <a
-                          href={`/playlist/${pl.id}`}
+                        <Link
+                          to={`/playlist/${pl.id}`}
                           className="hover:underline"
                         >
                           {pl.name}
-                        </a>
+                        </Link>
                         <p className="text-sm text-b4 truncate">
                           {pl.tracks.total} músicas
                         </p>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { InfoIcon, ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { motion } from 'motion/react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Link } from 'react-router'
 import { useSpotifyRecentlyPlayed } from '@/hooks/useSpotifyRecentlyPlayed'
 
 const HistorySkeleton = () => (
@@ -211,18 +212,18 @@ export default function History() {
                         </div>
                       </td>
                       <td className="px-4 py-2 text-white font-medium truncate max-w-[180px]">
-                        <a
-                          href={`/track/${item.track.id}`}
+                        <Link
+                          to={`/track/${item.track.id}`}
                           className="hover:underline"
                         >
                           {item.track.name}
-                        </a>
+                        </Link>
                       </td>
                       <td className="px-4 py-2 text-b4 truncate max-w-[160px]">
                         {item.track.artists.map((artist, idx) => (
-                          <a
+                          <Link
                             key={artist.id}
-                            href={`/artist/${artist.id}`}
+                            to={`/artist/${artist.id}`}
                             className="hover:underline"
                             style={{
                               marginRight:
@@ -233,7 +234,7 @@ export default function History() {
                             {idx < item.track.artists.length - 1 && (
                               <span>, </span>
                             )}
-                          </a>
+                          </Link>
                         ))}
                       </td>
                       <td className="px-4 py-2 text-b4 text-nowrap min-w-[120px]">
