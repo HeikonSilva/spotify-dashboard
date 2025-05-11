@@ -1,8 +1,8 @@
-import { useParams } from 'react-router'
+import { useParams, Link } from 'react-router'
 import { useSpotifyTrack } from '@/hooks/useSpotifyTrack'
 import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Music, Play } from 'lucide-react'
+import { Music, Play, Disc, User } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -55,7 +55,7 @@ export default function TrackPage() {
               className="w-20 h-20 rounded object-cover shadow"
             />
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2">
             <CardTitle className="flex items-center gap-2 text-2xl font-bold text-white">
               <Music className="w-5 h-5 text-sprimary" />
               {track.name}
@@ -70,6 +70,35 @@ export default function TrackPage() {
                 <Play className="w-5 h-5" />
               </motion.button>
             </CardTitle>
+
+            {/* Artistas */}
+            <div className="flex items-center gap-1 text-b4">
+              <User className="w-4 h-4 text-sprimary" />
+              <span className="font-medium mr-1">Artistas:</span>
+              {track.artists.map((artist, index) => (
+                <span key={artist.id}>
+                  {index > 0 && ', '}
+                  <Link
+                    to={`/artist/${artist.id}`}
+                    className="text-white hover:text-sprimary transition-colors"
+                  >
+                    {artist.name}
+                  </Link>
+                </span>
+              ))}
+            </div>
+
+            {/* Álbum */}
+            <div className="flex items-center gap-1 text-b4">
+              <Disc className="w-4 h-4 text-sprimary" />
+              <span className="font-medium mr-1">Álbum:</span>
+              <Link
+                to={`/album/${track.album.id}`}
+                className="text-white hover:text-sprimary transition-colors"
+              >
+                {track.album.name}
+              </Link>
+            </div>
           </div>
           {/* Custom Modal */}
           {showModal && (
