@@ -62,16 +62,46 @@ export const primaryItems = [
   },
 ]
 
+// Adicione este mapeamento para rotas dinâmicas e extras
+const routeTitles: Record<string, string> = {
+  '/': 'Home',
+  '/history': 'Histórico',
+  '/profile': 'Perfil',
+  '/player': 'Player',
+  '/search': 'Pesquisar',
+  '/search/artists': 'Buscar Artistas',
+  '/search/albums': 'Buscar Álbuns',
+  '/search/tracks': 'Buscar Músicas',
+  '/artist': 'Artista',
+  '/album': 'Álbum',
+  '/track': 'Música',
+  '/login': 'Entrar',
+  '/callback': 'Autenticando',
+  '*': 'Página não encontrada',
+}
+
+// Função para pegar o título correto
+function getPageTitle(pathname: string) {
+  // Checa se é rota exata
+  if (routeTitles[pathname]) return routeTitles[pathname]
+  // Checa se começa com rotas dinâmicas
+  if (pathname.startsWith('/artist/')) return routeTitles['/artist']
+  if (pathname.startsWith('/album/')) return routeTitles['/album']
+  if (pathname.startsWith('/track/')) return routeTitles['/track']
+  if (pathname.startsWith('/search/artists'))
+    return routeTitles['/search/artists']
+  if (pathname.startsWith('/search/albums'))
+    return routeTitles['/search/albums']
+  if (pathname.startsWith('/search/tracks'))
+    return routeTitles['/search/tracks']
+  return 'Spotify'
+}
+
 export default function Layout() {
   const location = useLocation()
-  const currentItem = primaryItems.find((item) =>
-    item.url === '/'
-      ? location.pathname === '/'
-      : location.pathname.startsWith(item.url)
-  )
 
   const { isAuthenticated, userProfile, logout } = useAuth()
-  const { data, error } = useSpotifyMe()
+  const { data } = useSpotifyMe()
 
   const profileData = userProfile || data
 
@@ -373,7 +403,7 @@ export default function Layout() {
                 <Menu className="h-6 w-6 text-sprimary" />
               </button>
               <h1 className="font-bold text-xl md:text-2xl">
-                {currentItem ? currentItem.name : 'Spotify'}
+                {getPageTitle(location.pathname)}
               </h1>
             </motion.header>
 

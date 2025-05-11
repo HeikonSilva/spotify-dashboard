@@ -12,6 +12,10 @@ import SearchArtists from './pages/SearchArtists'
 import SearchAlbums from './pages/SearchAlbums'
 import SearchTracks from './pages/SearchTracks'
 import NotFound from './pages/NotFound'
+import ArtistPage from './pages/ArtistPage'
+import AlbumPage from './pages/AlbumPage'
+import TrackPage from './pages/TrackPage'
+import PlaylistPage from './pages/PlaylistPage'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -29,6 +33,10 @@ export default function AnimatedRoutes() {
           <Route path="search/artists" element={<SearchArtists />} />
           <Route path="search/albums" element={<SearchAlbums />} />
           <Route path="search/tracks" element={<SearchTracks />} />
+          <Route path="artist/:id" element={<ArtistPage />} />
+          <Route path="album/:id" element={<AlbumPage />} />
+          <Route path="track/:id" element={<TrackPage />} />
+          <Route path="playlist/:id" element={<PlaylistPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

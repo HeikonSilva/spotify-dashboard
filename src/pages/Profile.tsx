@@ -222,7 +222,12 @@ const Profile = () => {
               )}
               <div>
                 <h3 className="text-xl font-bold text-white">
-                  {topArtists.items[0].name}
+                  <a
+                    href={`/artist/${topArtists.items[0].id}`}
+                    className="hover:underline"
+                  >
+                    {topArtists.items[0].name}
+                  </a>
                 </h3>
                 <p className="text-sm text-b4">
                   {topArtists.items[0].genres?.slice(0, 2).join(', ') ||
@@ -271,10 +276,24 @@ const Profile = () => {
               )}
               <div>
                 <h3 className="text-xl font-bold text-white">
-                  {topTracks.items[0].name}
+                  <a
+                    href={`/track/${topTracks.items[0].id}`}
+                    className="hover:underline"
+                  >
+                    {topTracks.items[0].name}
+                  </a>
                 </h3>
                 <p className="text-sm text-b4">
-                  {topTracks.items[0].artists.map((a) => a.name).join(', ')}
+                  {topTracks.items[0].artists.map((a, i) => (
+                    <span key={a.id}>
+                      <a href={`/artist/${a.id}`} className="hover:underline">
+                        {a.name}
+                      </a>
+                      {i < topTracks.items[0].artists.length - 1 && (
+                        <span>, </span>
+                      )}
+                    </span>
+                  ))}
                 </p>
               </div>
             </CardContent>
@@ -325,7 +344,12 @@ const Profile = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white truncate">
-                          {artist.name}
+                          <a
+                            href={`/artist/${artist.id}`}
+                            className="hover:underline"
+                          >
+                            {artist.name}
+                          </a>
                         </h3>
                         <p className="text-sm text-b4 truncate">
                           {artist.genres?.slice(0, 2).join(', ') ||
@@ -379,10 +403,25 @@ const Profile = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-white truncate">
-                          {track.name}
+                          <a
+                            href={`/track/${track.id}`}
+                            className="hover:underline"
+                          >
+                            {track.name}
+                          </a>
                         </h3>
                         <p className="text-sm text-b4 truncate">
-                          {track.artists.map((a) => a.name).join(', ')}
+                          {track.artists.map((a, i) => (
+                            <span key={a.id}>
+                              <a
+                                href={`/artist/${a.id}`}
+                                className="hover:underline"
+                              >
+                                {a.name}
+                              </a>
+                              {i < track.artists.length - 1 && <span>, </span>}
+                            </span>
+                          ))}
                         </p>
                       </div>
                     </li>
@@ -436,7 +475,12 @@ const Profile = () => {
                         </div>
                       )}
                       <div className="flex-1 font-medium text-white truncate min-w-0">
-                        {pl.name}
+                        <a
+                          href={`/playlist/${pl.id}`}
+                          className="hover:underline"
+                        >
+                          {pl.name}
+                        </a>
                         <p className="text-sm text-b4 truncate">
                           {pl.tracks.total} músicas
                         </p>

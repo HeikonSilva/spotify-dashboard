@@ -211,12 +211,30 @@ export default function History() {
                         </div>
                       </td>
                       <td className="px-4 py-2 text-white font-medium truncate max-w-[180px]">
-                        {item.track.name}
+                        <a
+                          href={`/track/${item.track.id}`}
+                          className="hover:underline"
+                        >
+                          {item.track.name}
+                        </a>
                       </td>
                       <td className="px-4 py-2 text-b4 truncate max-w-[160px]">
-                        {item.track.artists
-                          .map((artist) => artist.name)
-                          .join(', ')}
+                        {item.track.artists.map((artist, idx) => (
+                          <a
+                            key={artist.id}
+                            href={`/artist/${artist.id}`}
+                            className="hover:underline"
+                            style={{
+                              marginRight:
+                                idx < item.track.artists.length - 1 ? 4 : 0,
+                            }}
+                          >
+                            {artist.name}
+                            {idx < item.track.artists.length - 1 && (
+                              <span>, </span>
+                            )}
+                          </a>
+                        ))}
                       </td>
                       <td className="px-4 py-2 text-b4 text-nowrap min-w-[120px]">
                         {formatPlayedDate(item.played_at)}

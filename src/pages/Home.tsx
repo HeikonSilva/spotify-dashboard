@@ -248,7 +248,11 @@ export default function Home() {
             items={
               topArtistsData?.items.map((artist, idx) => ({
                 id: artist.id,
-                name: artist.name,
+                name: (
+                  <a href={`/artist/${artist.id}`} className="hover:underline">
+                    {artist.name}
+                  </a>
+                ),
                 imageUrl: artist.images[0]?.url,
                 index: idx + 1,
               })) || []
@@ -281,8 +285,19 @@ export default function Home() {
             items={
               topTracksData?.items.map((track, idx) => ({
                 id: track.id,
-                name: track.name,
-                subtitle: track.artists.map((a) => a.name).join(', '),
+                name: (
+                  <a href={`/track/${track.id}`} className="hover:underline">
+                    {track.name}
+                  </a>
+                ),
+                subtitle: track.artists.map((a, i) => (
+                  <span key={a.id}>
+                    <a href={`/artist/${a.id}`} className="hover:underline">
+                      {a.name}
+                    </a>
+                    {i < track.artists.length - 1 && <span>, </span>}
+                  </span>
+                )),
                 imageUrl: track.album.images[0]?.url,
                 index: idx + 1,
               })) || []
@@ -334,12 +349,30 @@ export default function Home() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate text-white">
-                          {item.track.name}
+                          <a
+                            href={`/track/${item.track.id}`}
+                            className="hover:underline"
+                          >
+                            {item.track.name}
+                          </a>
                         </p>
                         <p className="text-sm text-b4 truncate">
-                          {item.track.artists
-                            .map((artist) => artist.name)
-                            .join(', ')}
+                          {item.track.artists.map((artist, idx) => (
+                            <a
+                              key={artist.id}
+                              href={`/artist/${artist.id}`}
+                              className="hover:underline"
+                              style={{
+                                marginRight:
+                                  idx < item.track.artists.length - 1 ? 4 : 0,
+                              }}
+                            >
+                              {artist.name}
+                              {idx < item.track.artists.length - 1 && (
+                                <span>, </span>
+                              )}
+                            </a>
+                          ))}
                         </p>
                       </div>
                       <div className="text-sm text-b4">

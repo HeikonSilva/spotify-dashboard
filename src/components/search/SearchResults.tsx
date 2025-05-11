@@ -1,7 +1,6 @@
 import { SearchResultCard } from './SearchResultCard'
-import { TrackResult } from './TrackResult'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { AlertCircle, InfoIcon } from 'lucide-react'
+import { InfoIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay'
@@ -94,48 +93,91 @@ export function SearchResults({
         {type === 'tracks' && (
           <div className="divide-y divide-b3/20">
             {data.tracks.items.map((track: any, index: number) => (
-              <TrackResult
-                key={track.id}
-                id={track.id}
-                name={track.name}
-                artists={track.artists.map((a: any) => a.name).join(', ')}
-                album={track.album.name}
-                imageUrl={track.album.images?.[0]?.url}
-                duration={track.duration_ms}
-                index={index}
-              />
+              <div key={track.id} className="flex items-center py-2">
+                {/* Foto do álbum da track */}
+                {track.album?.images?.[0]?.url && (
+                  <a href={`/album/${track.album.id}`}>
+                    <img
+                      src={track.album.images[0].url}
+                      alt={track.album.name}
+                      className="w-10 h-10 rounded object-cover mr-3"
+                    />
+                  </a>
+                )}
+                <div className="flex flex-col">
+                  <a
+                    href={`/track/${track.id}`}
+                    className="font-medium text-white hover:underline"
+                  >
+                    {track.name}
+                  </a>
+                  <span className="text-b4 text-sm">
+                    {track.artists.map((a: any, idx: number) => (
+                      <span key={a.id}>
+                        <a href={`/artist/${a.id}`} className="hover:underline">
+                          {a.name}
+                        </a>
+                        {idx < track.artists.length - 1 && <span>, </span>}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="text-b4 text-xs">
+                    <a
+                      href={`/album/${track.album.id}`}
+                      className="hover:underline"
+                    >
+                      {track.album.name}
+                    </a>
+                  </span>
+                </div>
+              </div>
             ))}
           </div>
         )}
         {type === 'artists' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.artists.items.map((artist: any, index: number) => (
-              <SearchResultCard
+              <a
                 key={artist.id}
-                id={artist.id}
-                type="artist"
-                name={artist.name}
-                imageUrl={artist.images?.[0]?.url}
-                subtitle={`${
-                  artist.followers?.total.toLocaleString() || '0'
-                } seguidores`}
-                index={index}
-              />
+                href={`/artist/${artist.id}`}
+                className="block hover:underline"
+              >
+                <SearchResultCard
+                  id={artist.id}
+                  type="artist"
+                  name={artist.name}
+                  imageUrl={artist.images?.[0]?.url}
+                  subtitle={`${
+                    artist.followers?.total?.toLocaleString() || '0'
+                  } seguidores`}
+                  index={index}
+                />
+              </a>
             ))}
           </div>
         )}
         {type === 'albums' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {data.albums.items.map((album: any, index: number) => (
-              <SearchResultCard
+              <a
                 key={album.id}
-                id={album.id}
-                type="album"
-                name={album.name}
-                imageUrl={album.images?.[0]?.url}
-                subtitle={album.artists.map((a: any) => a.name).join(', ')}
-                index={index}
-              />
+                href={`/album/${album.id}`}
+                className="block hover:underline"
+              >
+                <SearchResultCard
+                  id={album.id}
+                  type="album"
+                  name={album.name}
+                  imageUrl={album.images?.[0]?.url}
+                  subtitle={album.artists
+                    .map(
+                      (a: any, idx: number) =>
+                        a.name + (idx < album.artists.length - 1 ? ', ' : '')
+                    )
+                    .join('')}
+                  index={index}
+                />
+              </a>
             ))}
           </div>
         )}

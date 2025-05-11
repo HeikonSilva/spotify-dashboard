@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -16,14 +15,14 @@ import {
   ListMusic,
   RefreshCw,
   AlertTriangle,
-  Home,
+  Eye,
+  MousePointerClick,
 } from 'lucide-react'
 import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer'
 import { useSpotifyMe } from '@/hooks/useSpotifyMe'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 
 export default function Player() {
-  const navigate = useNavigate()
   const {
     player,
     devices,
@@ -50,17 +49,16 @@ export default function Player() {
     player?.device?.volume_percent ?? 50
   )
   const [queueUri, setQueueUri] = useState('')
-  const [showAlert, setShowAlert] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
-  // Restrição para plano Free
-  useEffect(() => {
-    if (!profileLoading && profile && profile.product === 'free') {
-      setShowAlert(true)
-    }
-  }, [profile, profileLoading])
+  // Determina o modo de operação
+  const isViewMode = profile && profile.product === 'free'
+  // Agora, controles de player são desabilitados, mas refresh é sempre permitido
+  const controlsDisabled = isViewMode
 
   // Volume slider handler
   const handleVolumeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (controlsDisabled) return setShowModal(true)
     const value = Number(e.target.value)
     setVolumeState(value)
     await setVolume(value)
@@ -68,6 +66,7 @@ export default function Player() {
 
   // Add to queue handler
   const handleAddToQueue = async () => {
+    if (controlsDisabled) return setShowModal(true)
     if (queueUri) {
       await addToQueue(queueUri)
       setQueueUri('')
@@ -76,6 +75,7 @@ export default function Player() {
 
   // Repeat toggle handler
   const handleRepeat = async () => {
+    if (controlsDisabled) return setShowModal(true)
     if (!player) return
     const next =
       player.repeat_state === 'off'
@@ -88,12 +88,14 @@ export default function Player() {
 
   // Shuffle toggle handler
   const handleShuffle = async () => {
+    if (controlsDisabled) return setShowModal(true)
     if (!player) return
     await setShuffle(!player.shuffle_state)
   }
 
   // Play/Pause handler
   const handlePlayPause = async () => {
+    if (controlsDisabled) return setShowModal(true)
     if (!player) return
     if (player.is_playing) {
       await pause()
@@ -106,9 +108,17 @@ export default function Player() {
   const handleDeviceChange = async (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
+    if (controlsDisabled) return setShowModal(true)
     const deviceId = e.target.value
     await play({ device_id: deviceId })
     refresh()
+  }
+
+  // Handler para refresh
+  // Remova o bloqueio do modo visualização para o refresh
+  const handleRefresh = () => {
+    refresh()
+    refreshDevices()
   }
 
   if (profileLoading) {
@@ -128,41 +138,6 @@ export default function Player() {
           </CardContent>
         </Card>
       </div>
-    )
-  }
-
-  if (showAlert) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="max-w-xl mx-auto w-full"
-      >
-        <Card className="bg-b1 text-white border-b3/30">
-          <CardHeader>
-            <CardTitle>Player Spotify</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertTriangle className="h-10 w-10 text-yellow-400 mb-2" />
-              <p className="text-yellow-300 font-semibold">
-                O player não está disponível para contas Free.
-              </p>
-              <p className="text-b4 mt-2 mb-4">
-                Para utilizar o player, é necessário ter uma conta Premium.
-              </p>
-              <Button
-                onClick={() => navigate('/')}
-                className="cursor-pointer w-full bg-sprimary hover:bg-sprimary/90 text-black font-medium"
-              >
-                <Home className="h-4 w-4 mr-2" />
-                Ir para a página inicial
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
     )
   }
 
@@ -190,17 +165,37 @@ export default function Player() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Player Spotify</CardTitle>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => {
-                refresh()
-                refreshDevices()
-              }}
-              title="Atualizar"
-            >
-              <RefreshCw className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <span
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold ${
+                  isViewMode
+                    ? 'bg-yellow-400 text-black'
+                    : 'bg-sprimary text-black'
+                }`}
+                title={
+                  isViewMode
+                    ? 'Modo Visualização: Apenas leitura'
+                    : 'Modo Operação: Controle total'
+                }
+              >
+                {isViewMode ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <MousePointerClick className="w-4 h-4" />
+                )}
+                {isViewMode ? 'Visualização' : 'Operação'}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleRefresh}
+                title="Atualizar"
+                // Sempre habilitado, mesmo em modo visualização
+                disabled={false}
+              >
+                <RefreshCw className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -263,6 +258,7 @@ export default function Player() {
                   onClick={handleShuffle}
                   aria-label="Shuffle"
                   className={player.shuffle_state ? 'text-sprimary' : ''}
+                  disabled={controlsDisabled}
                 >
                   <Shuffle className="w-5 h-5" />
                 </Button>
@@ -271,6 +267,7 @@ export default function Player() {
                   variant="ghost"
                   onClick={previous}
                   aria-label="Anterior"
+                  disabled={controlsDisabled}
                 >
                   <SkipBack className="w-6 h-6" />
                 </Button>
@@ -280,6 +277,7 @@ export default function Player() {
                   onClick={handlePlayPause}
                   aria-label={player.is_playing ? 'Pausar' : 'Tocar'}
                   className="bg-sprimary text-black hover:bg-sprimary/90"
+                  disabled={controlsDisabled}
                 >
                   {player.is_playing ? (
                     <Pause className="w-7 h-7" />
@@ -292,6 +290,7 @@ export default function Player() {
                   variant="ghost"
                   onClick={next}
                   aria-label="Próxima"
+                  disabled={controlsDisabled}
                 >
                   <SkipForward className="w-6 h-6" />
                 </Button>
@@ -303,6 +302,7 @@ export default function Player() {
                   className={
                     player.repeat_state !== 'off' ? 'text-sprimary' : ''
                   }
+                  disabled={controlsDisabled}
                 >
                   <Repeat className="w-5 h-5" />
                 </Button>
@@ -318,6 +318,7 @@ export default function Player() {
                   value={volume}
                   onChange={handleVolumeChange}
                   className="w-full accent-sprimary"
+                  disabled={controlsDisabled}
                 />
                 <Volume2 className="w-5 h-5 text-b4" />
                 <span className="text-b4 text-xs w-8 text-right">
@@ -332,6 +333,7 @@ export default function Player() {
                   className="bg-b2 border border-b3/30 rounded px-2 py-1 text-b4 text-xs"
                   value={player.device?.id}
                   onChange={handleDeviceChange}
+                  disabled={controlsDisabled}
                 >
                   {devices.map((d) => (
                     <option key={d.id} value={d.id}>
@@ -347,20 +349,60 @@ export default function Player() {
                   type="text"
                   placeholder="URI da música para adicionar à fila"
                   value={queueUri}
-                  onChange={(e) => setQueueUri(e.target.value)}
+                  onChange={
+                    controlsDisabled
+                      ? () => setShowModal(true)
+                      : (e) => setQueueUri(e.target.value)
+                  }
                   className="flex-1 bg-b2 border border-b3/30 rounded px-2 py-1 text-b4 text-xs"
+                  disabled={controlsDisabled}
                 />
                 <Button
                   size="sm"
                   variant="secondary"
                   onClick={handleAddToQueue}
-                  disabled={!queueUri}
+                  disabled={!queueUri || controlsDisabled}
                 >
                   Adicionar à fila
                 </Button>
               </div>
             </div>
           )}
+          {/* Modal de aviso para modo visualização */}
+          <AnimatePresence>
+            {showModal && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+                onClick={() => setShowModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.95 }}
+                  className="bg-b2 rounded-lg p-6 max-w-xs w-full text-center shadow-lg border border-b3/30"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AlertTriangle className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                  <h3 className="text-lg font-semibold mb-2 text-yellow-300">
+                    Modo Visualização
+                  </h3>
+                  <p className="text-b4 mb-4">
+                    Esta conta está em modo de visualização. Para controlar o
+                    player, é necessário ter uma conta Premium.
+                  </p>
+                  <Button
+                    className="w-full bg-sprimary text-black font-medium"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Entendi
+                  </Button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardContent>
       </Card>
     </div>
