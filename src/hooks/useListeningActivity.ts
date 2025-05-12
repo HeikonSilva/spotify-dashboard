@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
-import { useSpotifyRecentlyPlayed } from './useSpotifyRecentlyPlayed'
+import { useState, useEffect, useMemo } from 'react'
+import { useSpotifyToken } from './useSpotifyToken'
+import axios from 'axios'
 
 interface HourlyActivity {
   hour: number
@@ -14,19 +15,98 @@ interface WeekdayActivity {
   percentage: number
 }
 
+interface Track {
+  id: string
+  name: string
+  duration_ms: number
+  artists: { id: string; name: string }[]
+}
+
+interface ListeningHistoryItem {
+  track: Track
+  played_at: string
+}
+
 export function useListeningActivity() {
+  const { token, loading: tokenLoading, error: tokenError } = useSpotifyToken()
+  const [history, setHistory] = useState<ListeningHistoryItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Período de 30 dias atrás
   const oneMonthAgo = useMemo(() => {
     const date = new Date()
     date.setMonth(date.getMonth() - 1)
     return date.getTime()
   }, [])
 
-  const { data, loading, error } = useSpotifyRecentlyPlayed({
-    limit: 50,
-    after: oneMonthAgo,
-  })
-
   const weekdayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+  useEffect(() => {
+    if (tokenLoading) return
+    if (tokenError) {
+      setError(tokenError)
+      setLoading(false)
+      return
+    }
+    if (!token) {
+      setError('No access token available')
+      setLoading(false)
+      return
+    }
+
+    const fetchAllRecentlyPlayed = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const allItems: ListeningHistoryItem[] = []
+        let nextUrl:
+          | string
+          | null = `https://api.spotify.com/v1/me/player/recently-played?limit=50&after=${oneMonthAgo}`
+
+        // Vamos fazer até 10 chamadas para obter até 500 músicas
+        // Você pode ajustar este limite conforme necessário
+        const MAX_CALLS = 10
+        let callCount = 0
+
+        while (nextUrl && callCount < MAX_CALLS) {
+          const response = await axios.get(nextUrl, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+
+          const items = response.data.items
+          allItems.push(...items)
+
+          // Extrai o cursor para a próxima página
+          if (response.data.cursors && response.data.cursors.after) {
+            nextUrl = `https://api.spotify.com/v1/me/player/recently-played?limit=50&after=${response.data.cursors.after}`
+          } else {
+            nextUrl = null
+          }
+
+          callCount++
+        }
+
+        setHistory(allItems)
+        setLoading(false)
+      } catch (err) {
+        console.error('Error fetching listening history:', err)
+        if (axios.isAxiosError(err) && err.response) {
+          setError(
+            `${err.response.status}: ${
+              err.response.data?.error?.message || err.message
+            }`
+          )
+        } else {
+          setError(err instanceof Error ? err.message : 'Unknown error')
+        }
+        setLoading(false)
+      }
+    }
+
+    fetchAllRecentlyPlayed()
+  }, [token, tokenLoading, tokenError, oneMonthAgo])
 
   const {
     hourlyActivity,
@@ -35,7 +115,7 @@ export function useListeningActivity() {
     totalTimeMs,
     uniqueArtists,
   } = useMemo(() => {
-    if (!data || !data.items || !data.items.length) {
+    if (history.length === 0) {
       return {
         hourlyActivity: Array(24)
           .fill(0)
@@ -54,14 +134,11 @@ export function useListeningActivity() {
       }
     }
 
-    // Initialize hourly data
     const hourlyData: number[] = Array(24).fill(0)
-
-    // Initialize weekday data
     const weekdayData: number[] = Array(7).fill(0)
 
-    // Process all tracks
-    data.items.forEach((item) => {
+    // Conta as músicas por hora e dia da semana
+    history.forEach((item) => {
       const date = new Date(item.played_at)
       const hour = date.getHours()
       const day = date.getDay()
@@ -70,34 +147,31 @@ export function useListeningActivity() {
       weekdayData[day]++
     })
 
-    // Total tracks
-    const totalTracks = data.items.length
+    const totalTracks = history.length
 
-    // Calculate percentage for each hour
     const hourlyActivity: HourlyActivity[] = hourlyData.map((count, hour) => ({
       hour,
       count,
-      percentage: (count / totalTracks) * 100,
+      percentage: totalTracks ? (count / totalTracks) * 100 : 0,
     }))
 
-    // Calculate percentage for each weekday
     const weekdayActivity: WeekdayActivity[] = weekdayData.map(
       (count, day) => ({
         day,
         name: weekdayNames[day],
         count,
-        percentage: (count / totalTracks) * 100,
+        percentage: totalTracks ? (count / totalTracks) * 100 : 0,
       })
     )
 
-    // Calculate total listening time
-    const totalTimeMs = data.items.reduce((acc, item) => {
+    // Calcula o tempo total de escuta
+    const totalTimeMs = history.reduce((acc, item) => {
       return acc + item.track.duration_ms
     }, 0)
 
-    // Count unique artists
+    // Conta artistas únicos
     const artistSet = new Set()
-    data.items.forEach((item) => {
+    history.forEach((item) => {
       item.track.artists.forEach((artist) => {
         artistSet.add(artist.id)
       })
@@ -111,7 +185,7 @@ export function useListeningActivity() {
       totalTimeMs,
       uniqueArtists,
     }
-  }, [data, weekdayNames])
+  }, [history, weekdayNames])
 
   return {
     hourlyActivity,

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useSpotifyToken } from './useSpotifyToken'
 import { useAuth } from '@/contexts/AuthContext'
 
-// Interface for the Spotify User Profile
 interface SpotifyUserProfile {
   country: string
   display_name: string
@@ -30,14 +29,13 @@ interface SpotifyUserProfile {
   uri: string
 }
 
-// Cache interface
 interface CacheData {
   profileData: SpotifyUserProfile | null
   timestamp: number
   token: string | null
 }
 
-const CACHE_DURATION = 60 * 1000 // Cache por 60 segundos
+const CACHE_DURATION = 60 * 1000
 let profileCache: CacheData | null = null
 
 export function useSpotifyMe() {
@@ -45,10 +43,8 @@ export function useSpotifyMe() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Obtém as funções do contexto de autenticação
   const { isAuthenticated, updateProfile } = useAuth()
 
-  // Ref para evitar múltiplas requisições durante montagens rápidas
   const isFetchingRef = useRef(false)
 
   const { token, loading: tokenLoading, error: tokenError } = useSpotifyToken()
@@ -76,7 +72,6 @@ export function useSpotifyMe() {
       if (isFetchingRef.current) return
 
       try {
-        // Verificar o cache - usar dados em cache se disponíveis e ainda válidos
         const now = Date.now()
         if (
           profileCache &&
@@ -109,7 +104,6 @@ export function useSpotifyMe() {
 
         const profileData: SpotifyUserProfile = await response.json()
 
-        // Atualizar o cache
         profileCache = {
           profileData,
           timestamp: now,

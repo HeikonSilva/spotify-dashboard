@@ -57,7 +57,6 @@ export function useSpotifyPlayer() {
     }
   }, [token])
 
-  // Fetch available devices
   const fetchDevices = useCallback(async () => {
     if (!token) return
     try {
@@ -180,7 +179,6 @@ export function useSpotifyPlayer() {
     if (tokenLoading || tokenError || !token) return
     fetchPlayer()
     fetchDevices()
-    // Optionally, you can poll for updates here
   }, [token, tokenLoading, tokenError, fetchPlayer, fetchDevices])
 
   return {

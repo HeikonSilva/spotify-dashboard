@@ -17,12 +17,20 @@ import {
   AlertTriangle,
   Eye,
   MousePointerClick,
+  Music,
 } from 'lucide-react'
 import { useSpotifyPlayer } from '@/hooks/useSpotifyPlayer'
 import { useSpotifyMe } from '@/hooks/useSpotifyMe'
+import { useSpotifyQueue } from '@/hooks/useSpotifyQueue'
 import { motion, AnimatePresence } from 'motion/react'
 import { usePremium } from '@/contexts/PremiumContext'
 import { Link } from 'react-router'
+
+function msToMinSec(ms: number) {
+  const min = Math.floor(ms / 60000)
+  const sec = Math.floor((ms % 60000) / 1000)
+  return `${min}:${sec.toString().padStart(2, '0')}`
+}
 
 export default function Player() {
   const {
@@ -47,6 +55,13 @@ export default function Player() {
     loading: profileLoading,
     error: profileError,
   } = useSpotifyMe()
+
+  const {
+    data: queueData,
+    loading: queueLoading,
+    error: queueError,
+  } = useSpotifyQueue()
+
   const [volume, setVolumeState] = useState(
     player?.device?.volume_percent ?? 50
   )
@@ -436,6 +451,146 @@ export default function Player() {
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Fila de Reprodução */}
+          <div className="mt-8">
+            <h3 className="text-lg font-bold text-white mb-2">
+              Fila de Reprodução
+            </h3>
+            <div className="bg-b1 border border-b3/30 rounded-xl shadow mb-4">
+              {queueLoading ? (
+                <div className="p-4 text-b4">Carregando fila...</div>
+              ) : queueError ? (
+                <div className="p-4 text-red-400">
+                  Erro ao carregar fila: {queueError}
+                </div>
+              ) : !queueData ||
+                (!queueData.currently_playing &&
+                  queueData.queue.length === 0) ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <InfoIcon className="h-8 w-8 text-b4 mb-2" />
+                  <p className="text-b4">Nenhuma música na fila.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-b3/30 text-b4 text-sm">
+                      <th className="py-2 px-2">#</th>
+                      <th className="py-2 px-2">Música</th>
+                      <th className="py-2 px-2">Artista</th>
+                      <th className="py-2 px-2">Álbum</th>
+                      <th className="py-2 px-2">Duração</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {queueData.currently_playing && (
+                      <tr className="bg-b3/10">
+                        <td className="py-2 px-2 font-bold text-sprimary">▶</td>
+                        <td className="py-2 px-2 flex items-center gap-2">
+                          {queueData.currently_playing.album.images?.[0]
+                            ?.url ? (
+                            <img
+                              src={
+                                queueData.currently_playing.album.images[0].url
+                              }
+                              alt={queueData.currently_playing.name}
+                              className="w-10 h-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-b3/50 flex items-center justify-center">
+                              <Music className="h-5 w-5 text-b4" />
+                            </div>
+                          )}
+                          <Link
+                            to={`/track/${queueData.currently_playing.id}`}
+                            className="hover:underline text-white"
+                          >
+                            {queueData.currently_playing.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2">
+                          {queueData.currently_playing.artists.map((a, i) => (
+                            <span key={a.id}>
+                              <Link
+                                to={`/artist/${a.id}`}
+                                className="hover:underline text-b4"
+                              >
+                                {a.name}
+                              </Link>
+                              {i <
+                                queueData.currently_playing.artists.length -
+                                  1 && ', '}
+                            </span>
+                          ))}
+                        </td>
+                        <td className="py-2 px-2">
+                          <Link
+                            to={`/album/${queueData.currently_playing.album.id}`}
+                            className="hover:underline text-b4"
+                          >
+                            {queueData.currently_playing.album.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2">
+                          {msToMinSec(queueData.currently_playing.duration_ms)}
+                        </td>
+                      </tr>
+                    )}
+                    {queueData.queue.map((track, idx) => (
+                      <tr
+                        key={track.id}
+                        className="hover:bg-b3/10 transition-colors"
+                      >
+                        <td className="py-2 px-2 text-b4">{idx + 1}</td>
+                        <td className="py-2 px-2 flex items-center gap-2">
+                          {track.album.images?.[0]?.url ? (
+                            <img
+                              src={track.album.images[0].url}
+                              alt={track.name}
+                              className="w-10 h-10 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded bg-b3/50 flex items-center justify-center">
+                              <Music className="h-5 w-5 text-b4" />
+                            </div>
+                          )}
+                          <Link
+                            to={`/track/${track.id}`}
+                            className="hover:underline text-white"
+                          >
+                            {track.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2">
+                          {track.artists.map((a, i) => (
+                            <span key={a.id}>
+                              <Link
+                                to={`/artist/${a.id}`}
+                                className="hover:underline text-b4"
+                              >
+                                {a.name}
+                              </Link>
+                              {i < track.artists.length - 1 && ', '}
+                            </span>
+                          ))}
+                        </td>
+                        <td className="py-2 px-2">
+                          <Link
+                            to={`/album/${track.album.id}`}
+                            className="hover:underline text-b4"
+                          >
+                            {track.album.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 px-2">
+                          {msToMinSec(track.duration_ms)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
