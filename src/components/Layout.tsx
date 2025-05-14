@@ -283,15 +283,21 @@ export default function Layout() {
             style={{ minWidth: 0 }}
           >
             {/* Logo section */}
-            <div className="flex items-center gap-3 py-5 px-6 text-sprimary">
-              <img
-                src={SpotifyIcon}
-                alt="Spotify Logo"
-                width={32}
-                height={32}
-                className="h-8 w-8"
-              />
-              <h1 className="font-bold text-2xl tracking-tight">Spotify</h1>
+            <div className="flex items-start gap-3 py-5 px-6 flex-col text-sprimary">
+              <div className="flex items-start flex-row gap-3">
+                <img
+                  src={SpotifyIcon}
+                  alt="Spotify Logo"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8"
+                />
+                <h1 className="font-bold text-2xl tracking-tight">Spotify</h1>
+              </div>
+              <div className="text-white">
+                <p>Heikon Silva Costa</p>
+                <p>Enzo Raphael</p>
+              </div>
             </div>
             <Separator className="bg-b3/30" />
             {/* Primary navigation */}
