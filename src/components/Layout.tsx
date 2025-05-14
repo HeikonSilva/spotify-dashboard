@@ -10,6 +10,7 @@ import {
   ChevronRight,
   DiscAlbum,
   Search,
+  Circle,
 } from 'lucide-react'
 import { Outlet, NavLink, useLocation } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
@@ -60,6 +61,11 @@ export const primaryItems = [
     icon: <Search className="h-5 w-5" />,
     url: '/search',
   },
+  {
+    name: 'Fatos Curiosos',
+    icon: <Circle className="h-5 w-5" />,
+    url: '/funfacts',
+  },
 ]
 
 // Adicione este mapeamento para rotas dinâmicas e extras
@@ -79,6 +85,7 @@ const routeTitles: Record<string, string> = {
   '/callback': 'Autenticando',
   '/playlist': 'Playlist',
   '*': 'Página não encontrada',
+  '/funfacts': 'Fatos Aleatórios',
 }
 
 // Função para pegar o título correto
@@ -216,14 +223,14 @@ export default function Layout() {
   const bgStyle = {
     background: `radial-gradient(
       800px circle at ${gradientStyle.x ?? 50}% ${gradientStyle.y ?? 50}%,
-      rgba(29, 185, 84, 0.15) 0%,
+      rgba(29, 185, 84, 0.2) 0%,
       rgba(18, 18, 24, 0) 60%
     ),
     radial-gradient(
       600px circle at ${100 - (gradientStyle.x ?? 50)}% ${
       100 - (gradientStyle.y ?? 50)
     }%,
-      rgba(90, 50, 220, 0.15) 0%,
+      rgba(90, 50, 220, 0.2) 0%,
       rgba(18, 18, 24, 0) 70%
     )`,
     transition: 'background 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -239,7 +246,6 @@ export default function Layout() {
 
   return (
     <div className="bg-b2 w-screen h-screen flex flex-row gap-3 p-3 overflow-hidden relative">
-      {/* Dynamic background gradient with motion */}
       <motion.div
         className="absolute inset-0 pointer-events-none z-0"
         style={bgStyle}
@@ -248,7 +254,6 @@ export default function Layout() {
         transition={{ duration: 0.6, ease: 'easeInOut' }}
       />
 
-      {/* Botão flutuante para minimizar/maximizar */}
       <button
         className="fixed top-6 right-6 z-50 bg-b1/80 hover:bg-b3/80 rounded-full p-2 shadow-lg transition-colors hidden md:block"
         onClick={() => setMinimized((v) => !v)}
@@ -262,11 +267,8 @@ export default function Layout() {
         )}
       </button>
 
-      {/* Sidebar e Main só aparecem se não estiver minimizado */}
       {!minimized && (
         <>
-          {/* Sidebar for desktop, drawer for mobile */}
-          {/* Overlay for mobile drawer */}
           {sidebarOpen && (
             <div
               className="fixed inset-0 bg-black/40 z-30 md:hidden"
@@ -274,7 +276,7 @@ export default function Layout() {
             />
           )}
 
-          <aside
+          <div
             className={cn(
               'fixed top-0 left-0 h-full w-64 max-w-[300px] flex flex-col gap-3 bg-b1/95 backdrop-blur-sm rounded-r-xl shadow-lg overflow-hidden z-40 transition-transform duration-300 md:static md:rounded-xl md:shadow-lg md:z-10 md:translate-x-0',
               sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -282,7 +284,6 @@ export default function Layout() {
             )}
             style={{ minWidth: 0 }}
           >
-            {/* Logo section */}
             <div className="flex items-start gap-3 py-5 px-6 flex-col text-sprimary">
               <div className="flex items-start flex-row gap-3">
                 <img
@@ -390,7 +391,7 @@ export default function Layout() {
                 </NavLink>
               )}
             </div>
-          </aside>
+          </div>
 
           {/* Main content area */}
           <main className="text-white flex-1 flex flex-col overflow-hidden bg-b1/80 backdrop-blur-sm rounded-xl shadow-lg z-10 relative md:ml-0 ml-0">

@@ -16,6 +16,7 @@ import ArtistPage from './pages/ArtistPage'
 import AlbumPage from './pages/AlbumPage'
 import TrackPage from './pages/TrackPage'
 import PlaylistPage from './pages/PlaylistPage'
+import Fact from './pages/Facts'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -37,6 +38,7 @@ export default function AnimatedRoutes() {
           <Route path="album/:id" element={<AlbumPage />} />
           <Route path="track/:id" element={<TrackPage />} />
           <Route path="playlist/:id" element={<PlaylistPage />} />
+          <Route path='funfacts' element={<Fact />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
