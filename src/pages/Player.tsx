@@ -25,6 +25,7 @@ import { useSpotifyQueue } from '@/hooks/useSpotifyQueue'
 import { motion, AnimatePresence } from 'motion/react'
 import { usePremium } from '@/contexts/PremiumContext'
 import { Link } from 'react-router'
+import { PremiumRequiredCard } from '@/components/ui/PremiumRequiredCard'
 
 function msToMinSec(ms: number) {
   const min = Math.floor(ms / 60000)
@@ -459,6 +460,8 @@ export default function Player() {
             <div className="bg-b1 border border-b3/30 rounded-xl shadow mb-4">
               {queueLoading ? (
                 <div className="p-4 text-b4">Carregando fila...</div>
+              ) : !isPremium ? (
+                <PremiumRequiredCard />
               ) : queueError ? (
                 <div className="p-4 text-red-400">
                   Erro ao carregar fila: {queueError}

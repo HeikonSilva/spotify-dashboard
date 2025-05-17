@@ -17,6 +17,7 @@ import AlbumPage from './pages/AlbumPage'
 import TrackPage from './pages/TrackPage'
 import PlaylistPage from './pages/PlaylistPage'
 import Fact from './pages/Facts'
+import PrivateRoute from './components/PrivateRoute'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -24,21 +25,30 @@ export default function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route
+            index
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
           <Route path="login" element={<Login />} />
           <Route path="callback" element={<Callback />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="player" element={<Player />} />
-          <Route path="history" element={<History />} />
-          <Route path="search" element={<Search />} />
-          <Route path="search/artists" element={<SearchArtists />} />
-          <Route path="search/albums" element={<SearchAlbums />} />
-          <Route path="search/tracks" element={<SearchTracks />} />
-          <Route path="artist/:id" element={<ArtistPage />} />
-          <Route path="album/:id" element={<AlbumPage />} />
-          <Route path="track/:id" element={<TrackPage />} />
-          <Route path="playlist/:id" element={<PlaylistPage />} />
-          <Route path='funfacts' element={<Fact />} />
+          <Route element={<PrivateRoute />}>
+            <Route path="profile" element={<Profile />} />
+            <Route path="player" element={<Player />} />
+            <Route path="history" element={<History />} />
+            <Route path="search" element={<Search />} />
+            <Route path="search/artists" element={<SearchArtists />} />
+            <Route path="search/albums" element={<SearchAlbums />} />
+            <Route path="search/tracks" element={<SearchTracks />} />
+            <Route path="artist/:id" element={<ArtistPage />} />
+            <Route path="album/:id" element={<AlbumPage />} />
+            <Route path="track/:id" element={<TrackPage />} />
+            <Route path="playlist/:id" element={<PlaylistPage />} />
+            <Route path="funfacts" element={<Fact />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
