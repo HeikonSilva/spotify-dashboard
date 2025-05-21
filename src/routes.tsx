@@ -18,6 +18,7 @@ import TrackPage from './pages/TrackPage'
 import PlaylistPage from './pages/PlaylistPage'
 import Fact from './pages/Facts'
 import PrivateRoute from './components/PrivateRoute'
+import About from './pages/About'
 
 export default function AnimatedRoutes() {
   const location = useLocation()
@@ -35,7 +36,9 @@ export default function AnimatedRoutes() {
           />
           <Route path="login" element={<Login />} />
           <Route path="callback" element={<Callback />} />
+          <Route path='about' element={<About />} />
           <Route element={<PrivateRoute />}>
+
             <Route path="profile" element={<Profile />} />
             <Route path="player" element={<Player />} />
             <Route path="history" element={<History />} />

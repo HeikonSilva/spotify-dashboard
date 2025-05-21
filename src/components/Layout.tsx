@@ -11,6 +11,7 @@ import {
   DiscAlbum,
   Search,
   Circle,
+  BookOpen,
 } from 'lucide-react'
 import { Outlet, NavLink, useLocation } from 'react-router'
 import SpotifyIcon from '/svgs/spotify_icon.svg'
@@ -36,6 +37,11 @@ import { Button } from '@/components/ui/button'
 
 // Simplified navigation items
 export const primaryItems = [
+  {
+    name: 'Sobre',
+    icon: <BookOpen className='h-5 w-5'/>,
+    url: '/about'
+  },
   {
     name: 'Home',
     icon: <Home className="h-5 w-5" />,
@@ -70,6 +76,7 @@ export const primaryItems = [
 
 // Adicione este mapeamento para rotas dinâmicas e extras
 const routeTitles: Record<string, string> = {
+  '/about': 'Sobre',
   '/': 'Home',
   '/history': 'Histórico',
   '/profile': 'Perfil',
